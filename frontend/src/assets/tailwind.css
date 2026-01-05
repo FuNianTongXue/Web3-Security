@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{ color-scheme: dark; }
+.glass {
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+
+/* ---------- Mega Menu readability improvements ---------- */
+.menu-overlay{
+  position: fixed;
+  inset: 0;
+  z-index: 40; /* below header (z-60) and mega menu panel (z-50) */
+  background: radial-gradient(circle at 20% 10%,
+    rgba(255, 200, 40, 0.08),
+    rgba(0, 0, 0, 0.72) 55%,
+    rgba(0, 0, 0, 0.86)
+  );
+  backdrop-filter: blur(2px) saturate(110%);
+}
+
+.mega-menu-panel{
+  z-index: 50;
+  background: rgba(12, 12, 14, 0.92) !important;
+  border: 1px solid rgba(255, 200, 40, 0.18) !important;
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.mm-group{
+  color: rgba(255, 200, 40, 0.78);
+  letter-spacing: 0.18em;
+}
+
+.mm-title{
+  color: rgba(255, 255, 255, 0.92);
+  letter-spacing: 0.2px;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.55);
+}
+
+.mm-desc{
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.45;
+}

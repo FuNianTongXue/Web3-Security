@@ -1,0 +1,224 @@
+{
+  "brand": {
+    "name": "AurumSec",
+    "tagline": "全栈区块链安全与合规",
+    "logo": {
+      "type": "svg",
+      "value": "<svg width=\"180\" height=\"36\" viewBox=\"0 0 180 36\" xmlns=\"http://www.w3.org/2000/svg\">\n<defs><linearGradient id=\"g\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\">\n<stop offset=\"0\" stop-color=\"#FFD666\"/><stop offset=\"1\" stop-color=\"#F0B90B\"/></linearGradient></defs>\n<g transform=\"translate(2,2)\">\n<path d=\"M16 0 L28 7 L28 21 L16 28 L4 21 L4 7 Z\" fill=\"none\" stroke=\"url(#g)\" stroke-width=\"2\"/>\n<path d=\"M16 6 L22 10 V18 L16 22 L10 18 V10 Z\" fill=\"rgba(240,185,11,0.18)\" stroke=\"#F0B90B\" stroke-width=\"1\"/>\n<text x=\"42\" y=\"20\" font-family=\"ui-sans-serif,system-ui\" font-size=\"16\" fill=\"#F0B90B\" font-weight=\"700\">AurumSec</text>\n</g></svg>"
+    }
+  },
+  "header": {
+    "nav": [
+      {
+        "label": "产品",
+        "type": "mega",
+        "key": "products",
+        "href": "/products"
+      },
+      {
+        "label": "资源",
+        "type": "link",
+        "href": "/resources"
+      },
+      {
+        "label": "洞察",
+        "type": "mega",
+        "key": "insights",
+        "href": "/insights"
+      },
+      {
+        "label": "公司",
+        "type": "link",
+        "href": "/company"
+      }
+    ],
+    "cta": {
+      "secondary": {
+        "label": "申请审计",
+        "href": "/contact?intent=audit"
+      },
+      "primary": {
+        "label": "启动平台",
+        "href": "https://your-saas.example.com",
+        "hint": "免费开始"
+      }
+    }
+  },
+  "megaMenus": {
+    "products": {
+      "columns": [
+        {
+          "title": "安全",
+          "items": [
+            {
+              "title": "安全审计",
+              "desc": "覆盖合约与链上系统的深度安全审计与报告输出。",
+              "href": "/page/security-audits"
+            },
+            {
+              "title": "实时监测",
+              "desc": "实时发现威胁与异常交易，减少损失窗口。",
+              "href": "/page/realtime-monitoring"
+            },
+            {
+              "title": "Safe 钱包监控",
+              "desc": "监控/分析/模拟 Safe 钱包交易，降低操作与合约风险。",
+              "href": "/page/safe-wallet-monitor"
+            },
+            {
+              "title": "L2 链级防护",
+              "desc": "在序列器/链级面进行风控与拦截，提升 L2 安全性。",
+              "href": "/page/l2-stop"
+            }
+          ]
+        },
+        {
+          "title": "合规",
+          "items": [
+            {
+              "title": "合规风控",
+              "desc": "识别可疑活动、管理 AML/CTF 风险并生成合规视图。",
+              "href": "/page/compliance-risk",
+              "badge": "免费试用"
+            },
+            {
+              "title": "资金溯源",
+              "desc": "追踪资金流向、可视化交易关系网，辅助调查取证。",
+              "href": "/page/fund-tracing"
+            }
+          ]
+        },
+        {
+          "title": "工具",
+          "items": [
+            {
+              "title": "链上浏览器",
+              "desc": "可视化、模拟与调试链上交易，快速还原攻击路径。",
+              "href": "/page/explorer"
+            },
+            {
+              "title": "Meta 工具集",
+              "desc": "为区块链浏览器增强 20+ 分析能力与排查工具。",
+              "href": "/page/meta-suites"
+            },
+            {
+              "title": "模拟 API",
+              "desc": "签名前预演交易结果与余额变化，降低误操作。",
+              "href": "/page/simulation-api"
+            },
+            {
+              "title": "防 MEV RPC",
+              "desc": "降低抢跑/三明治攻击影响，提升交易安全。",
+              "href": "/page/anti-mev-rpc"
+            }
+          ]
+        }
+      ]
+    },
+    "insights": {
+      "columns": [
+        {
+          "title": "行业博客",
+          "desc": "安全洞察、案例复盘与产品更新。",
+          "href": "/page/insights-blog"
+        },
+        {
+          "title": "研究论文",
+          "desc": "前沿研究与方法论，推动链上安全发展。",
+          "href": "/page/insights-research"
+        }
+      ],
+      "featured": {
+        "title": "加密支付合规手册",
+        "ctaLabel": "立即阅读",
+        "href": "/page/handbook",
+        "coverUrl": "/assets/handbook-cover.png"
+      }
+    }
+  },
+  "home": {
+    "hero": {
+      "headline": "打造安全、无缝的 Web3 世界",
+      "subhead": "提供全栈区块链安全与合规能力（审计、监测、溯源、模拟）",
+      "primaryCta": {
+        "label": "启动平台",
+        "href": "https://your-saas.example.com"
+      },
+      "secondaryCta": {
+        "label": "申请审计",
+        "href": "/contact?intent=audit"
+      },
+      "note": "免费开始"
+    }
+  },
+  "pages": {
+    "products": {
+      "title": "产品与能力",
+      "contentHtml": "<p>这里汇总平台的核心能力模块：<b>安全</b>、<b>合规</b>与<b>工具</b>。本页内容可在后台管理修改。</p><ul><li><b>安全</b>：审计、监测、钱包安全、L2 防护</li><li><b>合规</b>：地址筛查、AML/CTF 风险识别、资金溯源</li><li><b>工具</b>：交易模拟、攻击路径还原、反 MEV</li></ul>"
+    },
+    "resources": {
+      "title": "资源中心",
+      "contentHtml": "<p>这里放教程、白皮书、API 文档、集成指南等内容。支持在后台管理修改。</p><h3>建议放什么</h3><ul><li>产品接入指南</li><li>SDK / API 文档</li><li>常见问题 FAQ</li></ul>"
+    },
+    "insights": {
+      "title": "洞察与研究",
+      "contentHtml": "<p>更新安全事件复盘、研究文章与合规解读。支持在后台管理修改。</p>"
+    },
+    "company": {
+      "title": "关于我们",
+      "contentHtml": "<p>介绍团队、使命与联系信息。支持在后台管理修改。</p>"
+    },
+    "security-audits": {
+      "title": "安全审计",
+      "contentHtml": "<p>提供智能合约与链上系统的安全审计：覆盖访问控制、经济攻击、重入、权限、预言机与业务逻辑风险等。</p><h3>交付物</h3><ul><li>风险清单（严重性分级）</li><li>修复建议与补丁示例</li><li>复测报告</li></ul>"
+    },
+    "realtime-monitoring": {
+      "title": "实时监测",
+      "contentHtml": "<p>针对关键合约与地址持续监控，发现异常交易/权限变更/资金外流等并告警。</p>"
+    },
+    "safe-wallet-monitor": {
+      "title": "Safe 钱包监控",
+      "contentHtml": "<p>监控 Safe 多签交易，支持模拟与风险提示，降低误签风险。</p>"
+    },
+    "l2-stop": {
+      "title": "L2 链级防护",
+      "contentHtml": "<p>结合 L2 特性在链级/序列器侧进行风控拦截与保护策略。</p>"
+    },
+    "compliance-risk": {
+      "title": "合规风控",
+      "contentHtml": "<p>对地址与交易进行 AML/CTF 风险评估与标签化，支持合规审查。</p>"
+    },
+    "fund-tracing": {
+      "title": "资金溯源",
+      "contentHtml": "<p>将资金流向与交易路径图谱化展示，辅助追踪与取证分析。</p>"
+    },
+    "explorer": {
+      "title": "链上浏览器",
+      "contentHtml": "<p>可视化交易执行过程，帮助快速还原攻击路径与资金流向。</p>"
+    },
+    "meta-suites": {
+      "title": "Meta 工具集",
+      "contentHtml": "<p>一组增强型分析工具：标签、聚类、关系图、统计等能力。</p>"
+    },
+    "simulation-api": {
+      "title": "模拟 API",
+      "contentHtml": "<p>在签名前预演交易，展示预期结果与潜在风险。</p>"
+    },
+    "anti-mev-rpc": {
+      "title": "防 MEV RPC",
+      "contentHtml": "<p>通过更安全的交易通道与策略降低抢跑/夹子风险。</p>"
+    },
+    "insights-blog": {
+      "title": "行业博客",
+      "contentHtml": "<p>这里展示安全洞察与案例复盘。你可以在后台替换为自己的文章列表或外链。</p>"
+    },
+    "insights-research": {
+      "title": "研究论文",
+      "contentHtml": "<p>这里展示研究文章与白皮书，支持后台维护。</p>"
+    },
+    "handbook": {
+      "title": "加密支付合规手册",
+      "contentHtml": "<p>合规手册内容占位。可在后台编辑为你的手册章节或下载链接。</p>"
+    }
+  }
+}
