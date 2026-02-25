@@ -1,0 +1,24 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Common runtime/log artifacts
+*.log
+*.tmp
+
+# Node
+**/node_modules/
+**/dist/
+**/coverage/
+
+# Go
+**/bin/
+**/.gocache/
+
+# Local-only tooling/cache
+**/.cache/
+**/.claude/
+**/.venv-skill/
+
+# SCaudit local runtime data (keep curated samples if needed)
+scaudit-refactored/data/logs/
