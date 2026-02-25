@@ -1,0 +1,14 @@
+digraph AST {
+  rankdir=LR;
+  "file:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol" [label="Vault.sol\n(File)"];
+  "contract:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:Vault" [label="Vault\n(Contract)"];
+  "state:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:owner" [label="owner\n(StateVar)"];
+  "state:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:balances" [label="balances\n(StateVar)"];
+  "func:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:deposit:12" [label="deposit\n(Function)"];
+  "func:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:withdraw:16" [label="withdraw\n(Function)"];
+  "file:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol" -> "contract:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:Vault" [label="CONTAINS"];
+  "contract:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:Vault" -> "state:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:owner" [label="HAS_STATE"];
+  "contract:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:Vault" -> "state:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:balances" [label="HAS_STATE"];
+  "contract:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:Vault" -> "func:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:deposit:12" [label="DECLARES"];
+  "contract:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:Vault" -> "func:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:withdraw:16" [label="DECLARES"];
+}

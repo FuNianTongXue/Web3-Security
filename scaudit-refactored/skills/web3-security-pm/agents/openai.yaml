@@ -1,0 +1,4 @@
+interface:
+  display_name: "Web3 Security PM"
+  short_description: "Drive Web3 security platform product planning and execution"
+  default_prompt: "Use $web3-security-pm to define a Web3 security platform feature from PRD to launch plan."

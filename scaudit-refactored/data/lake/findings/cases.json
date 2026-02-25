@@ -1,0 +1,142 @@
+[
+  {
+    "case_id": "case_c365cb31da1e12b8",
+    "fingerprint": "9feae367beefd6bec8fcb5b843d12f50f6b9ab436686c7c5f0cdbbc732f474a6",
+    "project_id": "gitlab_1001",
+    "project_name": "contract-risk-lab",
+    "project_alias": "contract-risk-lab",
+    "department": "sec-team",
+    "team": "sec-team",
+    "project_pic": "sec-owner",
+    "project_owner": "sec-owner",
+    "security_owner": "sec-lead",
+    "test_owner": "未设置",
+    "latest_scan_id": "scan_1771035432390554000",
+    "rule_id": "slither-tx-origin",
+    "detector": "tx-origin",
+    "title": "使用 tx.origin 做认证",
+    "severity": "P0",
+    "impact": "高危",
+    "category": "Access Control",
+    "confidence": "90%",
+    "file": ".cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol",
+    "line": 17,
+    "snippet": "require(tx.origin == owner, \"only owner\");",
+    "description": "tx.origin 认证容易被钓鱼合约绕过。",
+    "remediation": "认证仅使用 msg.sender + 角色控制。",
+    "status": "处理中",
+    "sla_deadline": "2026-02-14T14:17:12+08:00",
+    "occurrence_count": 1,
+    "created_at": "2026-02-14T10:17:12+08:00",
+    "updated_at": "2026-02-15T13:08:16+08:00",
+    "first_seen_at": "2026-02-14T10:17:12+08:00",
+    "last_seen_at": "2026-02-14T10:17:12+08:00",
+    "history": [
+      {
+        "from_status": "",
+        "to_status": "待确认",
+        "operator": "system",
+        "note": "扫描自动入库",
+        "at": "2026-02-14T10:17:12+08:00"
+      },
+      {
+        "from_status": "待确认",
+        "to_status": "已确认",
+        "operator": "sec.tester",
+        "note": "安全测试复测通过，确认已修复",
+        "at": "2026-02-14T18:57:41+08:00"
+      },
+      {
+        "from_status": "已确认",
+        "to_status": "处理中",
+        "operator": "sec.tester",
+        "note": "安全测试复测通过，确认已修复",
+        "at": "2026-02-14T18:57:41+08:00"
+      },
+      {
+        "from_status": "处理中",
+        "to_status": "已修复",
+        "operator": "sec.tester",
+        "note": "安全测试复测通过，确认已修复",
+        "at": "2026-02-14T18:57:41+08:00"
+      },
+      {
+        "from_status": "已修复",
+        "to_status": "处理中",
+        "operator": "sec.tester",
+        "note": "安全测试复测未通过，确认未修复",
+        "at": "2026-02-15T13:08:16+08:00"
+      }
+    ]
+  },
+  {
+    "case_id": "case_7b85a5736ea6683a",
+    "fingerprint": "f89f5c1d1d186ecd865902516ab50781ff4dd5baff6693b06b976109f7ecc609",
+    "project_id": "gitlab_1001",
+    "project_name": "contract-risk-lab",
+    "project_alias": "contract-risk-lab",
+    "department": "sec-team",
+    "team": "sec-team",
+    "project_pic": "sec-owner",
+    "project_owner": "sec-owner",
+    "security_owner": "sec-lead",
+    "test_owner": "未设置",
+    "latest_scan_id": "scan_1771035432390554000",
+    "rule_id": "slither-suicidal",
+    "detector": "suicidal",
+    "title": "危险销毁函数",
+    "severity": "P0",
+    "impact": "高危",
+    "category": "Access Control",
+    "confidence": "70%",
+    "file": ".cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol",
+    "line": 23,
+    "snippet": "selfdestruct(payable(msg.sender));",
+    "description": "检测 selfdestruct/suicide，若权限不足会导致合约不可用。",
+    "remediation": "严格限制销毁权限，优先停用而非销毁。",
+    "status": "处理中",
+    "sla_deadline": "2026-02-14T14:17:12+08:00",
+    "occurrence_count": 1,
+    "created_at": "2026-02-14T10:17:12+08:00",
+    "updated_at": "2026-02-15T13:08:16+08:00",
+    "first_seen_at": "2026-02-14T10:17:12+08:00",
+    "last_seen_at": "2026-02-14T10:17:12+08:00",
+    "history": [
+      {
+        "from_status": "",
+        "to_status": "待确认",
+        "operator": "system",
+        "note": "扫描自动入库",
+        "at": "2026-02-14T10:17:12+08:00"
+      },
+      {
+        "from_status": "待确认",
+        "to_status": "已确认",
+        "operator": "sec.tester",
+        "note": "安全测试复测通过，确认已修复",
+        "at": "2026-02-14T18:57:41+08:00"
+      },
+      {
+        "from_status": "已确认",
+        "to_status": "处理中",
+        "operator": "sec.tester",
+        "note": "安全测试复测通过，确认已修复",
+        "at": "2026-02-14T18:57:41+08:00"
+      },
+      {
+        "from_status": "处理中",
+        "to_status": "已修复",
+        "operator": "sec.tester",
+        "note": "安全测试复测通过，确认已修复",
+        "at": "2026-02-14T18:57:41+08:00"
+      },
+      {
+        "from_status": "已修复",
+        "to_status": "处理中",
+        "operator": "sec.tester",
+        "note": "安全测试复测未通过，确认未修复",
+        "at": "2026-02-15T13:08:16+08:00"
+      }
+    ]
+  }
+]

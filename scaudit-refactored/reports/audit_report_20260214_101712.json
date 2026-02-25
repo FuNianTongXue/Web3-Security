@@ -1,0 +1,572 @@
+{
+  "报告主字段": {
+    "项目id": "gitlab_1001",
+    "项目名称": "contract-risk-lab",
+    "项目简称": "contract-risk-lab",
+    "所属部门": "sec-team",
+    "所属团队": "sec-team",
+    "项目责任人": "sec-owner",
+    "项目负责人": "sec-owner",
+    "安全责任人": "sec-lead",
+    "测试责任人": "未设置",
+    "git分支id": "main",
+    "备注": ""
+  },
+  "报告": {
+    "target_path": ".cache/repos/sec-team_contract-risk-lab",
+    "findings": [
+      {
+        "rule_id": "slither-tx-origin",
+        "detector": "tx-origin",
+        "title": "使用 tx.origin 做认证",
+        "severity": "P0",
+        "impact": "高危",
+        "confidence": "90%",
+        "category": "Access Control",
+        "reference": "https://github.com/crytic/slither#detectors",
+        "file": ".cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol",
+        "line": 17,
+        "snippet": "require(tx.origin == owner, \"only owner\");",
+        "description": "tx.origin 认证容易被钓鱼合约绕过。",
+        "remediation": "认证仅使用 msg.sender + 角色控制。"
+      },
+      {
+        "rule_id": "slither-suicidal",
+        "detector": "suicidal",
+        "title": "危险销毁函数",
+        "severity": "P0",
+        "impact": "高危",
+        "confidence": "70%",
+        "category": "Access Control",
+        "reference": "https://github.com/crytic/slither#detectors",
+        "file": ".cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol",
+        "line": 23,
+        "snippet": "selfdestruct(payable(msg.sender));",
+        "description": "检测 selfdestruct/suicide，若权限不足会导致合约不可用。",
+        "remediation": "严格限制销毁权限，优先停用而非销毁。"
+      }
+    ],
+    "summary": {
+      "total": 2,
+      "p0": 2,
+      "p1": 0,
+      "p2": 0,
+      "high": 2,
+      "medium": 0,
+      "low": 0
+    }
+  },
+  "漏洞报告明细": [
+    {
+      "项目id": "gitlab_1001",
+      "项目名称": "contract-risk-lab",
+      "项目简称": "contract-risk-lab",
+      "所属部门": "sec-team",
+      "所属团队": "sec-team",
+      "项目责任人": "sec-owner",
+      "项目负责人": "sec-owner",
+      "安全责任人": "sec-lead",
+      "测试责任人": "未设置",
+      "git分支id": "main",
+      "漏洞描述": "tx.origin 认证容易被钓鱼合约绕过。",
+      "修复方案": "认证仅使用 msg.sender + 角色控制。",
+      "缓解措施": "短期可通过权限收敛、紧急开关、限流与白名单等方式进行风险缓解。",
+      "备注": "规则ID=slither-tx-origin; 检测器=tx-origin; 分类=Access Control; 影响=高危; 置信度=90%"
+    },
+    {
+      "项目id": "gitlab_1001",
+      "项目名称": "contract-risk-lab",
+      "项目简称": "contract-risk-lab",
+      "所属部门": "sec-team",
+      "所属团队": "sec-team",
+      "项目责任人": "sec-owner",
+      "项目负责人": "sec-owner",
+      "安全责任人": "sec-lead",
+      "测试责任人": "未设置",
+      "git分支id": "main",
+      "漏洞描述": "检测 selfdestruct/suicide，若权限不足会导致合约不可用。",
+      "修复方案": "严格限制销毁权限，优先停用而非销毁。",
+      "缓解措施": "短期可通过权限收敛、紧急开关、限流与白名单等方式进行风险缓解。",
+      "备注": "规则ID=slither-suicidal; 检测器=suicidal; 分类=Access Control; 影响=高危; 置信度=70%"
+    }
+  ],
+  "checklist": [
+    {
+      "id": "CHK-001",
+      "category": "资产与会计一致性",
+      "checkpoint": "资产守恒不变量（池余额/总份额/总债务/储备金）",
+      "root_cause": "记账变量与真实余额不同步；路径漏更新",
+      "impact": "凭空增发/坏账/挤兑",
+      "remedy": "引入 invariant 测试；统一更新顺序；监控差值告警",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-002",
+      "category": "资产与会计一致性",
+      "checkpoint": "存款份额 mint/redeem 舍入",
+      "root_cause": "整数除法/精度不足",
+      "impact": "空池操纵兑换率，套利借空",
+      "remedy": "最小初始流动性；最小存款门槛；高精度缩放",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-003",
+      "category": "资产与会计一致性",
+      "checkpoint": "借款/还款计息舍入",
+      "root_cause": "利息指数精度/舍入误差累积",
+      "impact": "债务偏差、套利、误清算",
+      "remedy": "统一精度；利息累积用 index；舍入方向固定",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-004",
+      "category": "资产与会计一致性",
+      "checkpoint": "跨资产 decimals/priceDecimals 对齐",
+      "root_cause": "decimals 假设错误；单位混乱",
+      "impact": "估值倍率错导致爆仓/超贷",
+      "remedy": "统一内部 1e18 精度；显式转换函数",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-005",
+      "category": "资产与会计一致性",
+      "checkpoint": "fee-on-transfer 代币兼容（到账≠转出）",
+      "root_cause": "假设 transfer(amount) 到账=amount",
+      "impact": "记账多记→坏账/套利",
+      "remedy": "用余额差值记账；或禁用此类资产",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-006",
+      "category": "资产与会计一致性",
+      "checkpoint": "rebasing 代币兼容",
+      "root_cause": "余额自动变化未纳入会计",
+      "impact": "健康度/抵押计算失真",
+      "remedy": "隔离池；更保守抵押率；专门适配",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-007",
+      "category": "资产与会计一致性",
+      "checkpoint": "强制转账（ETH selfdestruct / ERC20 直转）",
+      "root_cause": "只信内部记账不看真实余额",
+      "impact": "利率/兑换率异常；资金卡住",
+      "remedy": "提供 sweep/救援函数；关键计算用内部现金变量",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-008",
+      "category": "资产与会计一致性",
+      "checkpoint": "救援函数 sweepToken 风险",
+      "root_cause": "救援逻辑可扫走底层资产/抵押",
+      "impact": "误转走用户资产",
+      "remedy": "强制禁止扫底层资产；白名单；多签+timelock",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-009",
+      "category": "权限与治理",
+      "checkpoint": "管理员角色最小化（分权）",
+      "root_cause": "一个 owner 控制所有敏感操作",
+      "impact": "全库被提/参数被改",
+      "remedy": "分离角色：Pause/Param/Upgrade；多签+timelock",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-010",
+      "category": "权限与治理",
+      "checkpoint": "紧急暂停 pause 设计",
+      "root_cause": "无 pause 或 pause 粒度过粗/过细",
+      "impact": "无法止血或误伤业务",
+      "remedy": "关键入口可暂停；恢复更严格（unpause timelock）",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-011",
+      "category": "权限与治理",
+      "checkpoint": "unpause 恢复门槛",
+      "root_cause": "恢复无延迟/可被滥用",
+      "impact": "二次伤害",
+      "remedy": "恢复走 timelock；两阶段恢复（先限额后全开）",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-012",
+      "category": "权限与治理",
+      "checkpoint": "升级代理 initializer 可重复",
+      "root_cause": "initializer 未锁；reinitializer 误用",
+      "impact": "接管权限/篡改状态",
+      "remedy": "使用 OZ Initializable；部署后立即初始化并锁死",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-013",
+      "category": "权限与治理",
+      "checkpoint": "升级存储布局冲突",
+      "root_cause": "新增变量顺序错误",
+      "impact": "资金错账/权限错乱",
+      "remedy": "固定存储槽；升级脚本校验；强制回归测试",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-014",
+      "category": "权限与治理",
+      "checkpoint": "时间锁绕过通道",
+      "root_cause": "存在不受 timelock 约束的敏感函数",
+      "impact": "一块内恶意变更",
+      "remedy": "统一走 timelock；紧急通道需多签+公开告警",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-015",
+      "category": "权限与治理",
+      "checkpoint": "治理投票借票（闪电贷投票）",
+      "root_cause": "投票权取实时余额",
+      "impact": "恶意提案通过",
+      "remedy": "使用快照（snapshot）/锁仓投票；提案延迟执行",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-016",
+      "category": "权限与治理",
+      "checkpoint": "参数变更幅度限制",
+      "root_cause": "抵押率/清算奖励可被提到极端值",
+      "impact": "一改即爆仓/被借空",
+      "remedy": "设置硬上限/下限；分阶段调整；变更需公告期",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-017",
+      "category": "预言机与价格",
+      "checkpoint": "单点预言机（单 DEX 即时价）",
+      "root_cause": "用 spot price 且池子浅",
+      "impact": "超额借款/误清算",
+      "remedy": "多源聚合；TWAP；偏离阈值熔断",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-018",
+      "category": "预言机与价格",
+      "checkpoint": "TWAP 窗口过短",
+      "root_cause": "窗口太短仍可操纵",
+      "impact": "估值被长期拉偏",
+      "remedy": "延长窗口；多源校验；异常波动暂停",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-019",
+      "category": "预言机与价格",
+      "checkpoint": "价格过期（stale）",
+      "root_cause": "缺少 maxDelay 检查",
+      "impact": "用旧价借贷/清算",
+      "remedy": "设置 maxDelay；过期禁用借贷/清算或降级",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-020",
+      "category": "预言机与价格",
+      "checkpoint": "价格异常跳变保护",
+      "root_cause": "无偏离阈值",
+      "impact": "连环清算/坏账",
+      "remedy": "偏离阈值触发暂停或提高保证金",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-021",
+      "category": "预言机与价格",
+      "checkpoint": "价格单位/精度转换错误",
+      "root_cause": "decimals/scale 写错",
+      "impact": "倍率错误",
+      "remedy": "统一内部精度；显式转换库函数",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-022",
+      "category": "预言机与价格",
+      "checkpoint": "抵押品流动性/可清算性评估缺失",
+      "root_cause": "只看价格不看深度",
+      "impact": "清算失败→坏账",
+      "remedy": "对低流动性资产更保守参数；隔离池",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-023",
+      "category": "清算机制",
+      "checkpoint": "健康度计算覆盖完整资产与债务",
+      "root_cause": "漏算某资产/某债务",
+      "impact": "资不抵债不清算或误清算",
+      "remedy": "统一会计口径；复用公共计算函数",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-024",
+      "category": "清算机制",
+      "checkpoint": "部分清算规则正确",
+      "root_cause": "只在全清算时处理坏账/奖励",
+      "impact": "规避坏账承担/卡死",
+      "remedy": "按比例处理坏账；限制最小清算比例",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-025",
+      "category": "清算机制",
+      "checkpoint": "清算奖励上限（剩余抵押不足）",
+      "root_cause": "奖励固定比例导致 require 失败",
+      "impact": "无法清算→坏账",
+      "remedy": "奖励 capped 到可用抵押；允许扣到0",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-026",
+      "category": "清算机制",
+      "checkpoint": "清算函数可用性（Gas DoS）",
+      "root_cause": "遍历列表无限增长",
+      "impact": "无法清算",
+      "remedy": "分页处理；限制资产种类/仓位数",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-027",
+      "category": "清算机制",
+      "checkpoint": "清算过程外部调用重入",
+      "root_cause": "先转资产再更新状态",
+      "impact": "重复清算/资金损失",
+      "remedy": "CEI 模式；ReentrancyGuard；pull 模式",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-028",
+      "category": "清算机制",
+      "checkpoint": "清算抢跑/自救干扰",
+      "root_cause": "借款人可在同块改变状态",
+      "impact": "清算失败率高",
+      "remedy": "进入可清算状态限制某些操作；冷却期",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-029",
+      "category": "清算机制",
+      "checkpoint": "不可清算资产处理",
+      "root_cause": "抵押品不可转/带回调revert",
+      "impact": "清算卡死",
+      "remedy": "替代处置（拍卖/托管）；白名单资产",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-030",
+      "category": "利率与债务模型",
+      "checkpoint": "利用率接近100%利率爆炸",
+      "root_cause": "曲线过陡/无上限",
+      "impact": "债务激增/连环清算",
+      "remedy": "利率上限；平滑调整；借贷上限",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-031",
+      "category": "利率与债务模型",
+      "checkpoint": "accrueInterest 覆盖所有入口",
+      "root_cause": "只在部分函数更新利息",
+      "impact": "债务/份额错账",
+      "remedy": "入口统一先 accrue；集中化 modifier",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-032",
+      "category": "利率与债务模型",
+      "checkpoint": "指数/利息变量精度与溢出",
+      "root_cause": "scale 选择不当",
+      "impact": "溢出导致系统崩坏",
+      "remedy": "采用成熟 index 模型；限制利率与时间步长",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-033",
+      "category": "利率与债务模型",
+      "checkpoint": "储备金/坏账吸收机制",
+      "root_cause": "reserveFactor 不合理/无保险",
+      "impact": "协议资不抵债",
+      "remedy": "保险基金；坏账拍卖；动态调整 reserveFactor",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-034",
+      "category": "闪电贷与组合攻击",
+      "checkpoint": "同一交易内“操纵价格→借贷→清算”",
+      "root_cause": "价格与借贷同用 spot",
+      "impact": "一笔交易借空",
+      "remedy": "用 TWAP/多源；限额与速率限制；熔断",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-035",
+      "category": "闪电贷与组合攻击",
+      "checkpoint": "跨协议抵押品上游风险",
+      "root_cause": "接受 LP/收益凭证/合成资产",
+      "impact": "抵押崩盘坏账",
+      "remedy": "隔离池；更保守抵押率；快速下架开关",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-036",
+      "category": "闪电贷与组合攻击",
+      "checkpoint": "组合路径的状态机绕过",
+      "root_cause": "特殊函数（donate/skim/flashMint）影响健康度",
+      "impact": "绕过清算/负债检查",
+      "remedy": "限制敏感函数调用条件；不变量校验",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-037",
+      "category": "Token与外部交互",
+      "checkpoint": "ERC20 transfer 返回值兼容",
+      "root_cause": "USDT类不返回 bool",
+      "impact": "转账失败但不报错",
+      "remedy": "统一 SafeERC20；失败回滚",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-038",
+      "category": "Token与外部交互",
+      "checkpoint": "ERC777 回调重入",
+      "root_cause": "tokensReceived hook",
+      "impact": "重入借款/提款",
+      "remedy": "重入锁；禁用该类资产或隔离",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-039",
+      "category": "Token与外部交互",
+      "checkpoint": "approve 竞态（旧值被抢跑）",
+      "root_cause": "直接 approve 新值",
+      "impact": "额度被盗用",
+      "remedy": "approve(0)再approve(new)或 increaseAllowance",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-040",
+      "category": "Token与外部交互",
+      "checkpoint": "黑名单/冻结代币风险",
+      "root_cause": "代币可冻结/可阻止转账",
+      "impact": "资金卡死/坏账",
+      "remedy": "禁用/隔离；应急替代处置流程",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-041",
+      "category": "Token与外部交互",
+      "checkpoint": "ETH 转账回退/DoS",
+      "root_cause": "向合约地址转 ETH 失败",
+      "impact": "提款/清算失败",
+      "remedy": "采用 pull；call 失败可重试/替代路径",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-042",
+      "category": "风控与限额",
+      "checkpoint": "supply cap / borrow cap",
+      "root_cause": "无上限",
+      "impact": "借空/挤兑",
+      "remedy": "设置 cap；按流动性动态调整",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-043",
+      "category": "风控与限额",
+      "checkpoint": "单账户限额/速率限制",
+      "root_cause": "缺少 rate limit",
+      "impact": "瞬时抽干流动性",
+      "remedy": "按资产/地址/时间窗限额；异常触发熔断",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-044",
+      "category": "风控与监控",
+      "checkpoint": "关键指标监控（不变量/偏离/失败率）",
+      "root_cause": "无可观测性",
+      "impact": "发现太晚",
+      "remedy": "接入告警；自动暂停策略",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-045",
+      "category": "风控与监控",
+      "checkpoint": "异常大额与新地址行为监控",
+      "root_cause": "缺少行为风控",
+      "impact": "损失扩大",
+      "remedy": "高风险行为要求延迟/更高保证金",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-046",
+      "category": "测试与审计",
+      "checkpoint": "不变量测试（Foundry/Echidna）缺失",
+      "root_cause": "只写单测无性质测试",
+      "impact": "隐藏漏洞未覆盖",
+      "remedy": "把历史事故模式固化为性质测试",
+      "severity": "P0"
+    },
+    {
+      "id": "CHK-047",
+      "category": "测试与审计",
+      "checkpoint": "回归测试库缺失",
+      "root_cause": "修复后无回归",
+      "impact": "旧洞复发",
+      "remedy": "每次修复新增用例；PR 必跑",
+      "severity": "P1"
+    },
+    {
+      "id": "CHK-048",
+      "category": "集成与依赖",
+      "checkpoint": "第三方库/合约升级风险",
+      "root_cause": "依赖可升级/可替换",
+      "impact": "系统异常",
+      "remedy": "固定依赖版本；准入评审；紧急开关",
+      "severity": "P1"
+    },
+    {
+      "id": "DEX-DICT",
+      "category": "Oracle / 经济攻击",
+      "checkpoint": "价格预言机操纵（Spot/TWAP 仍可被操纵）",
+      "root_cause": "",
+      "impact": "虚高抵押、超发份额/奖励、坏账、资产抽干。",
+      "remedy": "独立预言机（如 Chainlink）+ TWAP；多源中位数；偏离熔断；流动性门槛与限额；分离估值与交易报价。",
+      "severity": "P1"
+    },
+    {
+      "id": "DEX-DICT",
+      "category": "Token Integration",
+      "checkpoint": "通缩/手续费代币处理不当（Fee-on-transfer）",
+      "root_cause": "",
+      "impact": "被反复套利、池子资产流失。",
+      "remedy": "用 balanceBefore/After 计算实际到账；对代币进行适配或白名单；关键路径做差分测试。",
+      "severity": "P1"
+    },
+    {
+      "id": "DEX-DICT",
+      "category": "Router / Access Control",
+      "checkpoint": "路由器参数校验不足（Path/Recipient/Approve）",
+      "root_cause": "",
+      "impact": "资金流向被劫持、用户资产被盗。",
+      "remedy": "严格校验接收者与路径；最小授权；对关键参数进行 allowlist；上线前做 fuzz/符号执行覆盖。",
+      "severity": "P1"
+    },
+    {
+      "id": "DEX-DICT",
+      "category": "Reentrancy / 生态依赖",
+      "checkpoint": "重入与防护失效（含语言/库缺陷）",
+      "root_cause": "",
+      "impact": "状态错乱、资产被抽走。",
+      "remedy": "Checks-Effects-Interactions；独立 ReentrancyGuard；锁定安全编译器版本；紧急暂停与监控。",
+      "severity": "P1"
+    },
+    {
+      "id": "DEX-DICT",
+      "category": "AMM 数学 / 状态一致性",
+      "checkpoint": "不变量/边界条件错误（CLMM/StableSwap 等）",
+      "root_cause": "",
+      "impact": "异常提取、资产锁定或亏损。",
+      "remedy": "形式化/属性测试；差分测试（多实现对照）；限额与灰度；对舍入/精度进行专门审计。",
+      "severity": "P1"
+    }
+  ]
+}

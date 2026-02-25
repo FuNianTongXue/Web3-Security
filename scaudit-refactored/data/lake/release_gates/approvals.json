@@ -1,0 +1,93 @@
+[
+  {
+    "gate_id": "gitlab_1001|scan_1771035432390554000",
+    "scan_id": "scan_1771035432390554000",
+    "project_id": "gitlab_1001",
+    "project_name": "contract-risk-lab",
+    "required_owners": {
+      "appsec_owner": "sec-lead",
+      "dev_engineer": "sec-owner",
+      "ops_owner": "sec-owner",
+      "project_owner": "sec-owner",
+      "rd_owner": "sec-owner",
+      "security_engineer": "sec-lead",
+      "security_owner": "sec-lead",
+      "security_specialist": "sec-lead",
+      "security_test_engineer": "sec-owner"
+    },
+    "approvals": {
+      "appsec_owner": {
+        "role": "appsec_owner",
+        "approver": "approval-console",
+        "decision": "approved",
+        "comment": "",
+        "at": "2026-02-14T17:57:12+08:00"
+      },
+      "ops_owner": {
+        "role": "ops_owner",
+        "approver": "ops.owner",
+        "decision": "rejected",
+        "comment": "",
+        "at": "2026-02-15T12:54:44+08:00"
+      },
+      "project_owner": {
+        "role": "project_owner",
+        "approver": "approval-console",
+        "decision": "approved",
+        "comment": "",
+        "at": "2026-02-14T17:57:12+08:00"
+      },
+      "security_owner": {
+        "role": "security_owner",
+        "approver": "approval-console",
+        "decision": "approved",
+        "comment": "",
+        "at": "2026-02-14T16:08:03+08:00"
+      },
+      "security_specialist": {
+        "role": "security_specialist",
+        "approver": "approval-console",
+        "decision": "approved",
+        "comment": "",
+        "at": "2026-02-14T17:57:12+08:00"
+      },
+      "test_owner": {
+        "role": "test_owner",
+        "approver": "approval-console",
+        "decision": "approved",
+        "comment": "",
+        "at": "2026-02-14T16:08:03+08:00"
+      }
+    },
+    "production_confirmed": true,
+    "production_confirmed_by": "ops.owner",
+    "production_confirmed_at": "2026-02-14T19:26:56+08:00",
+    "production_confirm_note": "运维负责人确认投产",
+    "created_at": "2026-02-14T10:54:29+08:00",
+    "updated_at": "2026-02-23T21:33:22+08:00"
+  },
+  {
+    "gate_id": "gitlab_1001|scan_1771035152422144000",
+    "scan_id": "scan_1771035152422144000",
+    "project_id": "gitlab_1001",
+    "project_name": "contract-risk-lab",
+    "required_owners": {
+      "appsec_owner": "sec-lead",
+      "dev_engineer": "sec-owner",
+      "ops_owner": "sec-owner",
+      "project_owner": "sec-owner",
+      "rd_owner": "sec-owner",
+      "security_engineer": "sec-lead",
+      "security_owner": "sec-lead",
+      "security_specialist": "sec-lead",
+      "security_test_engineer": "sec-owner"
+    },
+    "approvals": {},
+    "production_confirmed": false,
+    "production_confirmed_by": "",
+    "production_confirmed_at": "",
+    "production_confirm_note": "",
+    "created_at": "2026-02-14T17:40:17+08:00",
+    "updated_at": "2026-02-14T17:40:25+08:00"
+  }
+]

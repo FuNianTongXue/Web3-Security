@@ -1,0 +1,8 @@
+{
+  "enabled": false,
+  "webhook_url": "",
+  "timeout_seconds": 5,
+  "notify_p0_only": true,
+  "retry_count": 1,
+  "retry_backoff_ms": 300
+}

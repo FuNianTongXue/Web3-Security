@@ -1,0 +1,50 @@
+{
+  "created_at": "2026-02-14T10:12:32+08:00",
+  "engine": "内置静态规则引擎（Slither风格）",
+  "engine_runtime": {
+    "requested_engine": "builtin",
+    "used_engine": "builtin",
+    "fallback": false,
+    "slither_binary": "slither",
+    "slither_timeout_seconds": 180,
+    "slither_detect_arg": "",
+    "slither_requested_detectors": 0,
+    "slither_available": false,
+    "slither_exit_code": 0,
+    "slither_duration_ms": 0,
+    "slither_detectors": 0,
+    "slither_findings": 0,
+    "builtin_findings": 0,
+    "slither_error": ""
+  },
+  "findings_size": 0,
+  "graph_dot": "data/lake/graphs/scan_1771035152422144000/ast_graph.dot",
+  "graph_json": "data/lake/graphs/scan_1771035152422144000/ast_graph.json",
+  "json_report": "reports/audit_report_20260214_101232.json",
+  "md_report": "reports/audit_report_20260214_101232.md",
+  "scan_id": "scan_1771035152422144000",
+  "source": "GitLab 项目扫描",
+  "summary": {
+    "total": 0,
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0
+  },
+  "target": ".cache/repos/sec-team_contract-risk-lab",
+  "报告主字段": {
+    "项目id": "gitlab_1001",
+    "项目名称": "contract-risk-lab",
+    "项目简称": "contract-risk-lab",
+    "所属部门": "sec-team",
+    "所属团队": "sec-team",
+    "项目责任人": "sec-owner",
+    "项目负责人": "sec-owner",
+    "安全责任人": "sec-lead",
+    "测试责任人": "未设置",
+    "git分支id": "main",
+    "备注": ""
+  }
+}

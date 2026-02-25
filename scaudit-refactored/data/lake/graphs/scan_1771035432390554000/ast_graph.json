@@ -1,0 +1,82 @@
+{
+  "project_id": "gitlab_1001",
+  "scan_id": "scan_1771035432390554000",
+  "nodes": [
+    {
+      "id": "file:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol",
+      "type": "File",
+      "label": "Vault.sol",
+      "props": {
+        "path": ".cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol"
+      }
+    },
+    {
+      "id": "contract:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:Vault",
+      "type": "Contract",
+      "label": "Vault",
+      "props": {
+        "file": ".cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol",
+        "line": "4"
+      }
+    },
+    {
+      "id": "state:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:owner",
+      "type": "StateVar",
+      "label": "owner",
+      "props": {
+        "datatype": "address"
+      }
+    },
+    {
+      "id": "state:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:balances",
+      "type": "StateVar",
+      "label": "balances",
+      "props": {
+        "datatype": "mapping"
+      }
+    },
+    {
+      "id": "func:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:deposit:12",
+      "type": "Function",
+      "label": "deposit",
+      "props": {
+        "line": "12"
+      }
+    },
+    {
+      "id": "func:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:withdraw:16",
+      "type": "Function",
+      "label": "withdraw",
+      "props": {
+        "line": "16"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "file:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol",
+      "to": "contract:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:Vault",
+      "type": "CONTAINS"
+    },
+    {
+      "from": "contract:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:Vault",
+      "to": "state:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:owner",
+      "type": "HAS_STATE"
+    },
+    {
+      "from": "contract:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:Vault",
+      "to": "state:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:balances",
+      "type": "HAS_STATE"
+    },
+    {
+      "from": "contract:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:Vault",
+      "to": "func:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:deposit:12",
+      "type": "DECLARES"
+    },
+    {
+      "from": "contract:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:Vault",
+      "to": "func:.cache/repos/sec-team_contract-risk-lab/contracts/Vault.sol:withdraw:16",
+      "type": "DECLARES"
+    }
+  ]
+}

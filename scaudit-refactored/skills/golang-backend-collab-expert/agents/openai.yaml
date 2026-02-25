@@ -1,0 +1,4 @@
+interface:
+  display_name: "Golang Backend Collab Expert"
+  short_description: "Drive Go backend delivery with PM/frontend alignment"
+  default_prompt: "Use $golang-backend-collab-expert to analyze product requirements, design Go backend solutions, and align API contracts with frontend and PM."

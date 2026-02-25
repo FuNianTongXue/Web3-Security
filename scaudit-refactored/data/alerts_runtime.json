@@ -1,0 +1,12 @@
+{
+  "last_attempt_at": "",
+  "last_success_at": "",
+  "last_failure_at": "",
+  "last_error": "",
+  "consecutive_failures": 0,
+  "total_sent": 0,
+  "total_failed": 0,
+  "last_event_type": "",
+  "last_level": "",
+  "history": []
+}

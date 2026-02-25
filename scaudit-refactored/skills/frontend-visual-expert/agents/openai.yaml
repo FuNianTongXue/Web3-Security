@@ -1,0 +1,4 @@
+interface:
+  display_name: "Frontend Visual Expert"
+  short_description: "Build polished, usable React/Vue frontends"
+  default_prompt: "Use $frontend-visual-expert to design and implement a high-quality frontend feature with strong visual polish and usability."
