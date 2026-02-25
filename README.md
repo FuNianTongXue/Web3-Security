@@ -10,6 +10,8 @@ A practical **Web3 security engineering monorepo** that combines:
 [![Vue](https://img.shields.io/badge/Vue-3.5%2B-42b883?logo=vuedotjs)](https://vuejs.org/)
 [![Repo Type](https://img.shields.io/badge/Repo-Monorepo-7e1022)](#repository-structure)
 
+**[中文文档](./README.zh-CN.md)**
+
 ## Why This Repo Stands Out
 
 - **End-to-end security lifecycle**: intake -> rules -> scan -> fix -> approval -> audit.
