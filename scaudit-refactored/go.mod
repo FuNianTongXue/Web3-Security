@@ -4,7 +4,7 @@ go 1.23
 
 require (
 	github.com/go-playground/validator/v10 v10.24.0
-	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/microcosm-cc/bluemonday v1.0.27
 	github.com/vesoft-inc/nebula-go/v3 v3.8.0
 	golang.org/x/crypto v0.32.0
