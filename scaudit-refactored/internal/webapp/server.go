@@ -11378,13 +11378,33 @@ var homeHTML = `<!doctype html>
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:"Geist","PingFang SC",sans-serif}
-.wrap{max-width:1860px;margin:20px auto;padding:0 16px 24px}
-.quick-nav{display:flex;flex-wrap:wrap;gap:8px;background:var(--primary);padding:8px 10px;border-radius:12px}
+.wrap{max-width:1860px;margin:20px auto;padding:0 16px 24px;display:grid;grid-template-columns:280px minmax(0,1fr);gap:12px;align-items:start}
+.top-layout{display:contents}
+.side-nav{position:sticky;top:20px;background:var(--bg-soft);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.side-nav-head{font-size:16px;font-weight:800;color:var(--primary)}
+.side-nav-sub{font-size:12px;color:var(--muted)}
+.quick-nav{display:flex;flex-direction:column;gap:8px}
+.nav-item{display:flex;align-items:center;justify-content:space-between;border-radius:10px;padding:8px 10px;font-size:13px;font-weight:700;text-decoration:none;background:#f3e0e3;color:var(--primary);border:1px solid transparent}
+.nav-item:hover{border-color:#d7a9b5;background:#f8e8eb}
+.nav-item.current{background:var(--primary);color:#ffecef;border-color:var(--primary)}
+.nav-cap{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;display:grid;gap:8px}
+.cap-title{font-size:13px;font-weight:800;color:var(--primary)}
+.cap-item{background:#fff;border:1px solid var(--line);border-radius:8px;padding:7px 8px}
+.cap-item-title{font-size:12px;font-weight:700;color:var(--text)}
+.cap-item-sub{margin-top:2px;font-size:11px;color:var(--muted);line-height:1.35}
 .chip{display:inline-flex;align-items:center;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;text-decoration:none}
 .chip.current{background:#5a0e1a;color:#ffecef;font-weight:700}
 .chip.soft{background:#fad6db;color:var(--primary);font-weight:700}
 .chip.primary{background:var(--primary-2);color:#ffecef}
-.hero{margin-top:12px;background:var(--bg-soft);border-radius:14px;padding:14px;display:grid;gap:6px}
+.hero{margin-top:0;background:var(--bg-soft);border-radius:14px;padding:14px;display:grid;gap:6px}
+.hero,
+.wrap>.section,
+.wrap>.row,
+.wrap>.kpi-strip,
+.wrap>.chart-grid,
+.wrap>.dark-center,
+.wrap>.alert,
+.wrap>.table-panel{grid-column:2;margin-top:0}
 .hero h1{margin:0;font-size:26px;color:var(--text)}
 .hero p{margin:0;color:var(--muted);font-size:13px}
 .section{margin-top:12px;background:var(--bg-soft);border-radius:14px;padding:12px}
@@ -11446,22 +11466,43 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Geist","PingFa
 .btn.primary{background:var(--primary);border-color:var(--primary);color:#ffecef}
 .btn.danger{background:var(--primary-2);border-color:var(--primary-2);color:#ffecef}
 /* V3 visual baseline */
-@media(max-width:1200px){.row{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.field-grid,.form-grid{grid-template-columns:1fr}.state-grid{grid-template-columns:1fr}.flow-branch{grid-template-columns:1fr}.flow-branch-mid{display:none}}
+@media(max-width:1200px){
+  .wrap{grid-template-columns:1fr;padding:0 12px 20px}
+  .top-layout{display:block}
+  .side-nav{position:static;top:auto}
+  .hero,.wrap>.section,.wrap>.row,.wrap>.kpi-strip,.wrap>.chart-grid,.wrap>.dark-center,.wrap>.alert,.wrap>.table-panel{grid-column:1}
+  .row{grid-template-columns:1fr}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .field-grid,.form-grid{grid-template-columns:1fr}
+  .state-grid{grid-template-columns:1fr}
+  .flow-branch{grid-template-columns:1fr}
+  .flow-branch-mid{display:none}
+}
 @media(max-width:800px){.row,.chart-grid{grid-template-columns:1fr}.grid-6,.dark-grid,.kpi-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div id="homeQuickNav" class="quick-nav"><span class="chip current">当前：导航加载中...</span></div>
-  <a id="logoutBtn" class="chip soft" style="display:none;margin-top:8px" href="#">退出登录</a>
+  <div class="top-layout">
+    <aside class="side-nav">
+      <div class="side-nav-head">左侧功能导航</div>
+      <div class="side-nav-sub">按模块切换页面，并同步查看模块能力与数据来源。</div>
+      <div id="homeQuickNav" class="quick-nav"><span class="nav-item current">导航加载中...</span></div>
+      <div id="homeNavCapability" class="nav-cap">
+        <div class="cap-title">导航能力</div>
+        <div class="cap-item"><div class="cap-item-title">能力加载中</div><div class="cap-item-sub">正在获取模块能力信息...</div></div>
+      </div>
+      <a id="logoutBtn" class="btn" style="display:none;align-self:flex-start" href="#">退出登录</a>
+    </aside>
 
-  <div class="hero">
-    <h1>首页数据总览</h1>
-    <p>按研发闭环组织：接入 → 规则 → 扫描 → 修复 → 审批 → 审计</p>
-    <div class="section" style="margin:0;padding:10px 12px">
-      <div class="title">研发闭环流程导览</div>
-      <div id="homeFlowGuide" class="chips"><span class="mini">流程加载中...</span></div>
-      <div class="sub">总览页：聚合六阶段关键数据与风险态势。</div>
+    <div class="hero">
+      <h1>首页数据总览</h1>
+      <p>按研发闭环组织：接入 → 规则 → 扫描 → 修复 → 审批 → 审计</p>
+      <div class="section" style="margin:0;padding:10px 12px">
+        <div class="title">研发闭环流程导览</div>
+        <div id="homeFlowGuide" class="chips"><span class="mini">流程加载中...</span></div>
+        <div class="sub">总览页：聚合六阶段关键数据与风险态势。</div>
+      </div>
     </div>
   </div>
 
@@ -11854,27 +11895,55 @@ function homeNavTitle(label){
   const raw=String(label||'').trim();
   return raw.replace(/^\d+\s*/, '');
 }
+const HOME_FALLBACK_NAV=[
+  {path:'/',label:'01 首页总览'},
+  {path:'/static-audit',label:'02 静态+规则'},
+  {path:'/settings',label:'03 系统配置'},
+  {path:'/logs',label:'04 日志审计'},
+  {path:'/approvals',label:'05 工单审批'}
+];
+const HOME_FALLBACK_CAPABILITY={
+  '/':'聚合指标+审批摘要+门禁状态',
+  '/static-audit':'规则库+扫描引擎+门禁评估',
+  '/settings':'集成配置+用户访问控制',
+  '/logs':'系统日志+操作日志+登录日志',
+  '/approvals':'项目上传/下载+漏洞复测+审批会签+投产确认'
+};
 function renderHomeQuickNav(){
   const box=byID('homeQuickNav');
   if(!box) return;
-  const nav=(H.blueprint&&Array.isArray(H.blueprint.navigation))?H.blueprint.navigation:[];
-  if(nav.length===0){
-    box.innerHTML='<span class="chip current">当前：首页</span>'
-      +'<a class="chip primary" href="'+esc(homeWithRolePath('/static-audit'))+'">静态+规则</a>'
-      +'<a class="chip primary" href="'+esc(homeWithRolePath('/settings'))+'">系统配置</a>'
-      +'<a class="chip primary" href="'+esc(homeWithRolePath('/logs'))+'">日志审计</a>'
-      +'<a class="chip primary" href="'+esc(homeWithRolePath('/approvals'))+'">工单审批</a>';
-    return;
-  }
+  const navRaw=(H.blueprint&&Array.isArray(H.blueprint.navigation))?H.blueprint.navigation:[];
+  const nav=navRaw.length>0?navRaw:HOME_FALLBACK_NAV;
   box.innerHTML=nav.map(function(one){
     const path=String((one&&one.path)||'').trim();
-    const label=String((one&&one.label)||(one&&one.title)||'-').trim();
+    const label=String((one&&one.label)||(one&&one.title)||'-').trim()||'-';
     const short=homeNavTitle(label)||label||'-';
     if(path==='/'){
-      return '<span class="chip current">当前：'+esc(short)+'</span>';
+      return '<span class="nav-item current">'+esc(label)+'</span>';
     }
-    return '<a class="chip primary" href="'+esc(homeWithRolePath(path))+'">'+esc(label)+'</a>';
+    return '<a class="nav-item" href="'+esc(homeWithRolePath(path))+'"><span>'+esc(label)+'</span><span aria-hidden="true">›</span></a>';
   }).join('');
+}
+function renderHomeNavCapability(){
+  const box=byID('homeNavCapability');
+  if(!box) return;
+  const navRaw=(H.blueprint&&Array.isArray(H.blueprint.navigation))?H.blueprint.navigation:[];
+  const modules=(H.blueprint&&Array.isArray(H.blueprint.modules))?H.blueprint.modules:[];
+  const nav=navRaw.length>0?navRaw:HOME_FALLBACK_NAV;
+  const moduleByPath={};
+  modules.forEach(function(one){
+    const path=String((one&&one.path)||'').trim();
+    if(path) moduleByPath[path]=one;
+  });
+  const rows=nav.map(function(one){
+    const path=String((one&&one.path)||'').trim();
+    const label=String((one&&one.label)||(one&&one.title)||'-').trim()||'-';
+    const short=homeNavTitle(label)||label||'-';
+    const module=moduleByPath[path];
+    const source=String((module&&module.data_source)||HOME_FALLBACK_CAPABILITY[path]||'模块能力数据加载中').trim();
+    return '<div class="cap-item"><div class="cap-item-title">'+esc(short)+'</div><div class="cap-item-sub">'+esc(source)+'</div></div>';
+  });
+  box.innerHTML='<div class="cap-title">功能能力视图</div>'+rows.join('');
 }
 function renderHomeFlowGuide(){
   const box=byID('homeFlowGuide');
@@ -11900,6 +11969,7 @@ async function loadHomeBlueprint(){
     }
   }catch(_){}
   renderHomeQuickNav();
+  renderHomeNavCapability();
   renderHomeFlowGuide();
 }
 function byID(id){return document.getElementById(id);}
