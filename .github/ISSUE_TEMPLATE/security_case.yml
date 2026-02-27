@@ -1,0 +1,63 @@
+name: Security case request
+description: Request a new security case, rule, or threat-modeling scenario
+title: "[Security-Case]: "
+labels: ["security", "roadmap"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for **non-sensitive** security engineering requests.
+        For critical or exploitable vulnerabilities, use private security advisories instead.
+
+  - type: checkboxes
+    id: precheck
+    attributes:
+      label: Before you submit
+      options:
+        - label: I have starred this repository and checked existing security-related issues.
+          required: true
+
+  - type: textarea
+    id: scenario
+    attributes:
+      label: Security scenario
+      description: Describe the attack surface and trust boundary.
+      placeholder: Contract/module, actors, assumptions, abuse path.
+    validations:
+      required: true
+
+  - type: textarea
+    id: requirement
+    attributes:
+      label: Desired output
+      description: What should this repository provide for your scenario?
+      placeholder: Rule pack, scanner check, report template, workflow control, dashboard metric.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Critical
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Public links, standards, incidents, or prior art.
+      placeholder: CVE, blog posts, audit reports, EIPs, etc.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirmation
+      options:
+        - label: I confirm this issue does not disclose private exploit details or secrets.
+          required: true

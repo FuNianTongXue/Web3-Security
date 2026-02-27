@@ -1,0 +1,59 @@
+name: Feature request
+description: Suggest a practical improvement or new capability
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: checkboxes
+    id: precheck
+    attributes:
+      label: Before you submit
+      options:
+        - label: I have starred this repository and reviewed existing issues.
+          required: true
+
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Real use case
+      description: Describe your real scenario and goal.
+      placeholder: What are you trying to secure or automate?
+    validations:
+      required: true
+
+  - type: input
+    id: context
+    attributes:
+      label: Chain/protocol context
+      description: Optional but highly recommended.
+      placeholder: e.g. EVM, Solana, DeFi protocol, bridge, wallet service
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      placeholder: What should be added or changed?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      placeholder: What did you try as a workaround?
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Expected impact
+      description: Why should this be prioritized?
+      placeholder: Security value, efficiency gains, adoption impact.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirmation
+      options:
+        - label: I can help validate this feature after implementation.
+          required: true

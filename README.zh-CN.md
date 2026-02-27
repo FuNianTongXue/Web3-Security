@@ -10,6 +10,20 @@
 [![Vue](https://img.shields.io/badge/Vue-3.5%2B-42b883?logo=vuedotjs)](https://vuejs.org/)
 [![Repo Type](https://img.shields.io/badge/Repo-Monorepo-7e1022)](#仓库结构)
 
+## 支持项目（Star + Issue）
+
+如果这个仓库对你有帮助，欢迎：
+
+1. 点一个 **Star** 支持项目。
+2. 提交 **1 个 Issue**，描述你的真实场景或痛点。
+3. 尽量写清链/协议类型、攻击面、期望输出，方便快速排期。
+
+路线图优先级会综合 **影响面 + Issue 质量 + 社区需求**。
+
+- Star 仓库：[github.com/FuNianTongXue/Web3-Security](https://github.com/FuNianTongXue/Web3-Security)
+- 提交需求/问题：[Issue 模板入口](https://github.com/FuNianTongXue/Web3-Security/issues/new/choose)
+- 查看当前需求：[Issues 列表](https://github.com/FuNianTongXue/Web3-Security/issues)
+
 ## 项目亮点
 
 - **全链路安全闭环**：接入 -> 规则 -> 扫描 -> 修复 -> 审批 -> 审计  
@@ -114,7 +128,17 @@ docker compose up -d --build
 
 见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
 
+## 高质量 Issue 清单
+
+提交 Issue 前，建议补充：
+
+- 业务/安全背景（你要保护什么）
+- 复现步骤或样例数据（Bug 类问题）
+- 期望行为与实际行为
+- 优先级与影响范围（不解决会造成什么影响）
+
+信息越完整，越容易被快速排期和处理。
+
 ## 许可证
 
 MIT，详见 [LICENSE](./LICENSE)。
-

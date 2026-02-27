@@ -1,0 +1,88 @@
+name: Bug report
+description: Report a reproducible problem in the project
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: checkboxes
+    id: precheck
+    attributes:
+      label: Before you submit
+      options:
+        - label: I have starred this repository and reviewed CONTRIBUTING.md.
+          required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Affected module
+      options:
+        - scaudit-refactored
+        - official-website-demo
+        - code-audit-materials
+        - threat-modeling-materials
+        - compliance-materials
+        - docs
+        - other
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Bug summary
+      description: What is wrong?
+      placeholder: A clear and concise description of the bug.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Please provide deterministic steps.
+      placeholder: |
+        1. Go to ...
+        2. Run ...
+        3. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: What should happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      placeholder: What actually happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Security/business impact
+      description: What is the impact if this issue is not fixed?
+      placeholder: Scope, severity, and affected users or systems.
+    validations:
+      required: true
+
+  - type: textarea
+    id: artifacts
+    attributes:
+      label: Logs, screenshots, or sample data
+      description: Paste relevant output or attach files.
+      render: shell
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of conduct
+      options:
+        - label: I confirm this issue is written in good faith and contains no secrets.
+          required: true

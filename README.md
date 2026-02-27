@@ -12,6 +12,20 @@ A practical **Web3 security engineering monorepo** that combines:
 
 **[中文文档](./README.zh-CN.md)**
 
+## Support This Project (Star + Issue)
+
+If this repository helps your security work, please:
+
+1. Give the repo a **Star**.
+2. Open **1 issue** with your real use case or pain point.
+3. Include chain/protocol, attack surface, and expected output so we can prioritize it.
+
+We prioritize roadmap items by **impact + issue quality + community demand**.
+
+- Star: [github.com/FuNianTongXue/Web3-Security](https://github.com/FuNianTongXue/Web3-Security)
+- Submit an issue: [Issue templates](https://github.com/FuNianTongXue/Web3-Security/issues/new/choose)
+- Browse requests: [Open issues](https://github.com/FuNianTongXue/Web3-Security/issues)
+
 ## Why This Repo Stands Out
 
 - **End-to-end security lifecycle**: intake -> rules -> scan -> fix -> approval -> audit.
@@ -115,6 +129,17 @@ This repository includes:
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+## Issue Quality Checklist
+
+Before submitting an issue, try to include:
+
+- Business/security context (what are you protecting?)
+- Reproducible steps or data sample (if bug report)
+- Expected behavior and actual behavior
+- Priority and impact (what breaks if unresolved?)
+
+High-quality issues get triaged faster and are more likely to be scheduled.
 
 ## License
 
