@@ -291,15 +291,6 @@ type AppSettings struct {
 	Jira项目键     string `json:"jira_project_key"`
 	Jira鉴权模式    string `json:"jira_auth_mode"`
 	Jira超时秒     int    `json:"jira_timeout_seconds"`
-	N8N启用       bool   `json:"n8n_enabled"`
-	N8N地址       string `json:"n8n_base_url"`
-	N8NWebhook  string `json:"n8n_webhook_url"`
-	N8NToken    string `json:"n8n_api_token"`
-	N8N超时秒      int    `json:"n8n_timeout_seconds"`
-	N8N鉴权模式     string `json:"n8n_auth_mode"`
-	N8N鉴权头      string `json:"n8n_auth_header"`
-	N8N重试次数     int    `json:"n8n_retry_count"`
-	N8N退避毫秒     int    `json:"n8n_retry_backoff_ms"`
 	并行线程数       int
 	任务队列长度      int
 	日志存储路径      string
@@ -324,15 +315,6 @@ func (s AppSettings) MarshalJSON() ([]byte, error) {
 		JiraProject string        `json:"jira_project_key"`
 		JiraAuth    string        `json:"jira_auth_mode"`
 		JiraTimeout int           `json:"jira_timeout_seconds"`
-		N8NEnabled  bool          `json:"n8n_enabled"`
-		N8NBaseURL  string        `json:"n8n_base_url"`
-		N8NWebhook  string        `json:"n8n_webhook_url"`
-		N8NToken    string        `json:"n8n_api_token"`
-		N8NTimeout  int           `json:"n8n_timeout_seconds"`
-		N8NAuthMode string        `json:"n8n_auth_mode"`
-		N8NAuthHead string        `json:"n8n_auth_header"`
-		N8NRetry    int           `json:"n8n_retry_count"`
-		N8NBackoff  int           `json:"n8n_retry_backoff_ms"`
 		Parallelism int           `json:"并行线程数"`
 		QueueSize   int           `json:"任务队列长度"`
 		LogPath     string        `json:"日志存储路径"`
@@ -348,8 +330,6 @@ func (s AppSettings) MarshalJSON() ([]byte, error) {
 	return json.Marshal(jsonSettings{
 		GitLabURL: s.GitLabURL, GitLabToken: s.GitLabToken,
 		JiraEnabled: s.Jira启用, JiraBaseURL: s.Jira地址, JiraUser: s.Jira用户名, JiraToken: s.JiraToken, JiraProject: s.Jira项目键, JiraAuth: s.Jira鉴权模式, JiraTimeout: s.Jira超时秒,
-		N8NEnabled: s.N8N启用, N8NBaseURL: s.N8N地址, N8NWebhook: s.N8NWebhook, N8NToken: s.N8NToken, N8NTimeout: s.N8N超时秒,
-		N8NAuthMode: s.N8N鉴权模式, N8NAuthHead: s.N8N鉴权头, N8NRetry: s.N8N重试次数, N8NBackoff: s.N8N退避毫秒,
 		Parallelism: s.并行线程数, QueueSize: s.任务队列长度, LogPath: s.日志存储路径,
 		ScanEngine: s.扫描引擎, SlitherBin: s.Slither路径, SlitherTime: s.Slither超时秒,
 		ArchComps: s.架构组件列表, Admin: s.超级管理员, Users: s.用户列表, MetaRule: s.GitLab识别规则, System: s.系统管理,
@@ -367,15 +347,6 @@ func (s *AppSettings) UnmarshalJSON(b []byte) error {
 		JiraProject string        `json:"jira_project_key"`
 		JiraAuth    string        `json:"jira_auth_mode"`
 		JiraTimeout int           `json:"jira_timeout_seconds"`
-		N8NEnabled  bool          `json:"n8n_enabled"`
-		N8NBaseURL  string        `json:"n8n_base_url"`
-		N8NWebhook  string        `json:"n8n_webhook_url"`
-		N8NToken    string        `json:"n8n_api_token"`
-		N8NTimeout  int           `json:"n8n_timeout_seconds"`
-		N8NAuthMode string        `json:"n8n_auth_mode"`
-		N8NAuthHead string        `json:"n8n_auth_header"`
-		N8NRetry    int           `json:"n8n_retry_count"`
-		N8NBackoff  int           `json:"n8n_retry_backoff_ms"`
 		Parallelism int           `json:"并行线程数"`
 		QueueSize   int           `json:"任务队列长度"`
 		LogPath     string        `json:"日志存储路径"`
@@ -401,15 +372,6 @@ func (s *AppSettings) UnmarshalJSON(b []byte) error {
 	s.Jira项目键 = v.JiraProject
 	s.Jira鉴权模式 = v.JiraAuth
 	s.Jira超时秒 = v.JiraTimeout
-	s.N8N启用 = v.N8NEnabled
-	s.N8N地址 = v.N8NBaseURL
-	s.N8NWebhook = v.N8NWebhook
-	s.N8NToken = v.N8NToken
-	s.N8N超时秒 = v.N8NTimeout
-	s.N8N鉴权模式 = v.N8NAuthMode
-	s.N8N鉴权头 = v.N8NAuthHead
-	s.N8N重试次数 = v.N8NRetry
-	s.N8N退避毫秒 = v.N8NBackoff
 	s.并行线程数 = v.Parallelism
 	s.任务队列长度 = v.QueueSize
 	s.日志存储路径 = v.LogPath
@@ -477,15 +439,6 @@ func defaultSettings() AppSettings {
 		Jira项目键:    "",
 		Jira鉴权模式:   "basic",
 		Jira超时秒:    20,
-		N8N启用:      false,
-		N8N地址:      "",
-		N8NWebhook: "",
-		N8NToken:   "",
-		N8N超时秒:     20,
-		N8N鉴权模式:    "bearer",
-		N8N鉴权头:     "X-N8N-API-KEY",
-		N8N重试次数:    1,
-		N8N退避毫秒:    350,
 		并行线程数:      12,
 		任务队列长度:     256,
 		日志存储路径:     filepath.Join("data", "logs"),
@@ -548,43 +501,6 @@ func normalizeSettings(cfg AppSettings) AppSettings {
 	}
 	if cfg.Jira超时秒 > 120 {
 		cfg.Jira超时秒 = 120
-	}
-	cfg.N8N地址 = strings.TrimSpace(cfg.N8N地址)
-	cfg.N8NWebhook = strings.TrimSpace(cfg.N8NWebhook)
-	cfg.N8NToken = strings.TrimSpace(cfg.N8NToken)
-	cfg.N8N鉴权模式 = strings.ToLower(strings.TrimSpace(cfg.N8N鉴权模式))
-	switch cfg.N8N鉴权模式 {
-	case "none", "bearer", "x-n8n-api-key", "custom-header":
-	default:
-		cfg.N8N鉴权模式 = "bearer"
-	}
-	cfg.N8N鉴权头 = strings.TrimSpace(cfg.N8N鉴权头)
-	if cfg.N8N鉴权头 == "" {
-		cfg.N8N鉴权头 = "X-N8N-API-KEY"
-	}
-	if cfg.N8N超时秒 <= 0 {
-		cfg.N8N超时秒 = 20
-	}
-	if cfg.N8N超时秒 < 3 {
-		cfg.N8N超时秒 = 3
-	}
-	if cfg.N8N超时秒 > 120 {
-		cfg.N8N超时秒 = 120
-	}
-	if cfg.N8N重试次数 < 0 {
-		cfg.N8N重试次数 = 0
-	}
-	if cfg.N8N重试次数 > 5 {
-		cfg.N8N重试次数 = 5
-	}
-	if cfg.N8N退避毫秒 <= 0 {
-		cfg.N8N退避毫秒 = 350
-	}
-	if cfg.N8N退避毫秒 < 50 {
-		cfg.N8N退避毫秒 = 50
-	}
-	if cfg.N8N退避毫秒 > 5000 {
-		cfg.N8N退避毫秒 = 5000
 	}
 	if cfg.并行线程数 <= 0 {
 		cfg.并行线程数 = 12

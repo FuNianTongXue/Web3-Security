@@ -23,14 +23,13 @@ go run ./cmd/scaudit-desktop
 2. 回到“审计工作台”，加载项目/分支。
 3. 勾选规则并执行扫描。
 
-## 三、动态审计编排（含 n8n）
+## 三、动态审计编排（本地执行）
 
 动态审计入口位于“审计工作台 -> 一点五、动态代码审计编排（AI Skills）”。
 
 - 审计深度：`quick / standard / deep`
 - 编排方式：
-  - `auto`：优先走 n8n（已配置时），否则回退本地工具链
-  - `n8n`：强制走 n8n webhook
+  - `auto`：自动映射为本地工具链执行
   - `local`：强制本地执行（Slither/Forge/Echidna）
 
 在“系统设置 -> Jira 接入（直连）”中配置：
@@ -45,26 +44,9 @@ go run ./cmd/scaudit-desktop
 
 说明：
 
-- Jira 当前为直连模式，不依赖 n8n。
-- n8n 编排能力保留在动态审计模块，后续可按需启用。
-
-在“系统设置 -> 动态审计编排（n8n）”中配置（可选）：
-
-- `n8n_enabled`
-- `n8n_base_url`（可选）
-- `n8n_webhook_url`（推荐直接配置）
-- `n8n_api_token`（可选）
-- `n8n_timeout_seconds`
-- `n8n_auth_mode`（`bearer` / `x-n8n-api-key` / `custom-header` / `none`）
-- `n8n_auth_header`（Header 鉴权名称）
-- `n8n_retry_count`
-- `n8n_retry_backoff_ms`
-
-说明：
-
-- `auto` 模式下，如果 n8n 调用失败，会自动回退本地执行并在运行摘要中记录 `orchestrator_fallback`。
+- Jira 为直连模式。
+- 动态审计当前仅保留本地编排与执行。
 - 动态审计结果会参与门禁评估并触发治理告警。
-- 系统设置页支持 `测试 n8n 连接`，优先探测 `GET /api/v1/workflows?limit=1` 连通性。
 
 ## 四、规则管理能力
 

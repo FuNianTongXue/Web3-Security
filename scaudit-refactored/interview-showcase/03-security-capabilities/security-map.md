@@ -12,7 +12,7 @@
 - 静态规则库（可增删改启停）
 - 扫描源支持本地与 GitLab
 - AST 图输出（JSON + DOT）
-- 动态审计编排：`local` / `n8n` / `auto fallback`
+- 动态审计编排：`local` / `auto(映射到local)`
 
 ## 治理与发布门禁
 

@@ -31,8 +31,7 @@ settings_payload="$(cat <<EOF
 {
   "gitlab_url": "http://${MOCK_GITLAB_ADDR}",
   "gitlab_token": "${MOCK_GITLAB_TOKEN}",
-  "scan_engine": "builtin",
-  "n8n_enabled": false
+  "scan_engine": "builtin"
 }
 EOF
 )"

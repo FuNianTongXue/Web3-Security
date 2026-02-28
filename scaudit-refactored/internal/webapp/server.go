@@ -708,7 +708,6 @@ func NewHandler() (http.Handler, error) {
 	mux.HandleFunc("/api/settings/alerts/runtime", a.alertRuntimeAPI)
 	mux.HandleFunc("/api/settings/scan-engine/runtime", a.scanEngineRuntimeAPI)
 	mux.HandleFunc("/api/settings/jira/test", a.jiraSettingsTestAPI)
-	mux.HandleFunc("/api/settings/n8n/test", a.n8nSettingsTestAPI)
 	mux.HandleFunc("/api/logs/config", a.logsConfigAPI)
 	mux.HandleFunc("/api/logs/verify", a.logsVerifyAPI)
 	mux.HandleFunc("/api/logs/query", a.logsQueryAPI)
@@ -2136,8 +2135,6 @@ func (a *app) settingsAPI(w http.ResponseWriter, r *http.Request) {
 		a.write(w, http.StatusOK, apiResp{OK: true, Data: map[string]interface{}{
 			"gitlab_url": cfg.GitLabURL, "has_token": cfg.GitLabToken != "",
 			"jira_enabled": cfg.Jira启用, "jira_base_url": cfg.Jira地址, "jira_user": cfg.Jira用户名, "jira_project_key": cfg.Jira项目键, "jira_auth_mode": cfg.Jira鉴权模式, "jira_timeout_seconds": cfg.Jira超时秒, "jira_api_token_set": strings.TrimSpace(cfg.JiraToken) != "",
-			"n8n_enabled": cfg.N8N启用, "n8n_base_url": cfg.N8N地址, "n8n_webhook_url": cfg.N8NWebhook, "n8n_api_token_set": strings.TrimSpace(cfg.N8NToken) != "", "n8n_timeout_seconds": cfg.N8N超时秒,
-			"n8n_auth_mode": cfg.N8N鉴权模式, "n8n_auth_header": cfg.N8N鉴权头, "n8n_retry_count": cfg.N8N重试次数, "n8n_retry_backoff_ms": cfg.N8N退避毫秒,
 			"并行线程数": cfg.并行线程数, "任务队列长度": cfg.任务队列长度,
 			"日志存储路径":                  cfg.日志存储路径,
 			"scan_engine":             cfg.扫描引擎,
@@ -2192,33 +2189,6 @@ func (a *app) settingsAPI(w http.ResponseWriter, r *http.Request) {
 		if _, ok := raw["jira_timeout_seconds"]; ok {
 			cfg.Jira超时秒 = req.Jira超时秒
 		}
-		if _, ok := raw["n8n_enabled"]; ok {
-			cfg.N8N启用 = req.N8N启用
-		}
-		if _, ok := raw["n8n_base_url"]; ok {
-			cfg.N8N地址 = strings.TrimSpace(req.N8N地址)
-		}
-		if _, ok := raw["n8n_webhook_url"]; ok {
-			cfg.N8NWebhook = strings.TrimSpace(req.N8NWebhook)
-		}
-		if _, ok := raw["n8n_api_token"]; ok {
-			cfg.N8NToken = strings.TrimSpace(req.N8NToken)
-		}
-		if _, ok := raw["n8n_timeout_seconds"]; ok {
-			cfg.N8N超时秒 = req.N8N超时秒
-		}
-		if _, ok := raw["n8n_auth_mode"]; ok {
-			cfg.N8N鉴权模式 = strings.TrimSpace(req.N8N鉴权模式)
-		}
-		if _, ok := raw["n8n_auth_header"]; ok {
-			cfg.N8N鉴权头 = strings.TrimSpace(req.N8N鉴权头)
-		}
-		if _, ok := raw["n8n_retry_count"]; ok {
-			cfg.N8N重试次数 = req.N8N重试次数
-		}
-		if _, ok := raw["n8n_retry_backoff_ms"]; ok {
-			cfg.N8N退避毫秒 = req.N8N退避毫秒
-		}
 		if !isEmptyMetaRule(req.GitLab识别规则) {
 			cfg.GitLab识别规则 = req.GitLab识别规则
 		}
@@ -2248,8 +2218,6 @@ func (a *app) settingsAPI(w http.ResponseWriter, r *http.Request) {
 		a.write(w, http.StatusOK, apiResp{OK: true, Data: map[string]interface{}{
 			"gitlab_url": cfg.GitLabURL, "has_token": cfg.GitLabToken != "",
 			"jira_enabled": cfg.Jira启用, "jira_base_url": cfg.Jira地址, "jira_user": cfg.Jira用户名, "jira_project_key": cfg.Jira项目键, "jira_auth_mode": cfg.Jira鉴权模式, "jira_timeout_seconds": cfg.Jira超时秒, "jira_api_token_set": strings.TrimSpace(cfg.JiraToken) != "",
-			"n8n_enabled": cfg.N8N启用, "n8n_base_url": cfg.N8N地址, "n8n_webhook_url": cfg.N8NWebhook, "n8n_api_token_set": strings.TrimSpace(cfg.N8NToken) != "", "n8n_timeout_seconds": cfg.N8N超时秒,
-			"n8n_auth_mode": cfg.N8N鉴权模式, "n8n_auth_header": cfg.N8N鉴权头, "n8n_retry_count": cfg.N8N重试次数, "n8n_retry_backoff_ms": cfg.N8N退避毫秒,
 			"并行线程数": cfg.并行线程数, "任务队列长度": cfg.任务队列长度,
 			"日志存储路径":                  cfg.日志存储路径,
 			"scan_engine":             cfg.扫描引擎,
@@ -3064,93 +3032,6 @@ func (a *app) jiraSettingsTestAPI(w http.ResponseWriter, r *http.Request) {
 		lastErr = "jira 连通性测试失败"
 	}
 	a.write(w, http.StatusBadGateway, apiResp{OK: false, Message: lastErr, Data: lastData})
-}
-
-func (a *app) n8nSettingsTestAPI(w http.ResponseWriter, r *http.Request) {
-	if !a.requireLoginAPI(w, r) {
-		return
-	}
-	if r.Method != http.MethodGet {
-		a.write(w, http.StatusMethodNotAllowed, apiResp{OK: false, Message: "请求方法不支持"})
-		return
-	}
-	cfg, err := a.settingStore.Load()
-	if err != nil {
-		a.write(w, http.StatusInternalServerError, apiResp{OK: false, Message: err.Error()})
-		return
-	}
-	webhookURL, err := resolveDynamicN8NWebhookURL(cfg)
-	if err != nil {
-		a.write(w, http.StatusBadRequest, apiResp{OK: false, Message: err.Error()})
-		return
-	}
-	baseURL := strings.TrimSpace(cfg.N8N地址)
-	if baseURL == "" {
-		a.write(w, http.StatusOK, apiResp{OK: true, Data: map[string]interface{}{
-			"reachable":     true,
-			"mode":          "webhook-url-check",
-			"webhook_url":   webhookURL,
-			"auth_mode":     cfg.N8N鉴权模式,
-			"api_token_set": strings.TrimSpace(cfg.N8NToken) != "",
-			"message":       "未配置 n8n_base_url，已完成 webhook 地址合法性检查；如需连通性探测请配置 base_url 后重试。",
-		}})
-		return
-	}
-	apiURL := strings.TrimRight(baseURL, "/") + "/api/v1/workflows?limit=1"
-	req, err := http.NewRequest(http.MethodGet, apiURL, nil)
-	if err != nil {
-		a.write(w, http.StatusBadRequest, apiResp{OK: false, Message: err.Error()})
-		return
-	}
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("X-Scaudit-Source", "n8n-connectivity-test")
-	if err := applyN8NAuthHeaders(req, cfg); err != nil {
-		a.write(w, http.StatusBadRequest, apiResp{OK: false, Message: err.Error()})
-		return
-	}
-	timeout := cfg.N8N超时秒
-	if timeout <= 0 {
-		timeout = 20
-	}
-	if timeout < 3 {
-		timeout = 3
-	}
-	client := &http.Client{Timeout: time.Duration(timeout) * time.Second}
-	started := time.Now()
-	resp, err := dynamicN8NHTTPDo(client, req)
-	if err != nil {
-		a.write(w, http.StatusBadGateway, apiResp{OK: false, Message: "n8n 连通性测试失败: " + err.Error()})
-		return
-	}
-	defer resp.Body.Close()
-	raw, rerr := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
-	if rerr != nil {
-		a.write(w, http.StatusBadGateway, apiResp{OK: false, Message: "读取 n8n 响应失败: " + rerr.Error()})
-		return
-	}
-	latency := time.Since(started).Milliseconds()
-	excerpt := firstLineText(strings.TrimSpace(string(raw)))
-	if excerpt == "" {
-		excerpt = resp.Status
-	}
-	data := map[string]interface{}{
-		"reachable":      resp.StatusCode >= 200 && resp.StatusCode < 300,
-		"mode":           "api-v1-workflows",
-		"api_url":        apiURL,
-		"webhook_url":    webhookURL,
-		"http_status":    resp.StatusCode,
-		"latency_ms":     latency,
-		"auth_mode":      cfg.N8N鉴权模式,
-		"auth_header":    cfg.N8N鉴权头,
-		"api_token_set":  strings.TrimSpace(cfg.N8NToken) != "",
-		"response_bytes": len(raw),
-		"response_hint":  excerpt,
-	}
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		a.write(w, http.StatusBadGateway, apiResp{OK: false, Message: "n8n 连通性测试失败: HTTP " + strconv.Itoa(resp.StatusCode), Data: data})
-		return
-	}
-	a.write(w, http.StatusOK, apiResp{OK: true, Data: data})
 }
 
 func (a *app) settingsTest(w http.ResponseWriter, r *http.Request) {
@@ -14161,7 +14042,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
       </div>
       <div class="mini-row" style="justify-content:flex-end">
         <button id="btnTestGitlab" class="btn primary">批量通过</button>
-        <button id="btnTestN8N" class="btn danger">批量驳回</button>
+        <button id="btnBatchReject" class="btn danger">批量驳回</button>
         <button id="btnLoadAll" class="btn">批量导出</button>
       </div>
     </div>
@@ -14767,7 +14648,7 @@ async function batchExportSystem(){
 }
 
 function setSystemBatchBusy(busy){
-  const ids=['btnTestGitlab','btnTestN8N','btnLoadAll'];
+  const ids=['btnTestGitlab','btnBatchReject','btnLoadAll'];
   for(const id of ids){
     const el=Q(id);
     if(el) el.disabled=!!busy;
@@ -15005,7 +14886,7 @@ function bind(){
     try{await batchPassSystem();}catch(e){showSysMsg(e.message,false);}
     finally{setSystemBatchBusy(false);}
   };
-  Q('btnTestN8N').onclick=function(){batchRejectSystem();};
+  Q('btnBatchReject').onclick=function(){batchRejectSystem();};
   Q('btnLoadAll').onclick=async function(){
     setSystemBatchBusy(true);
     try{await batchExportSystem();showSysMsg('批量导出完成：系统快照已下载。',true);}catch(e){showSysMsg(e.message,false);}

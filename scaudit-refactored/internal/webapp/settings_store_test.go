@@ -16,21 +16,6 @@ func TestDefaultSettingsIncludeScanEngineConfig(t *testing.T) {
 	if cfg.Slither超时秒 != 180 {
 		t.Fatalf("default slither timeout mismatch: %d", cfg.Slither超时秒)
 	}
-	if cfg.N8N超时秒 != 20 {
-		t.Fatalf("default n8n timeout mismatch: %d", cfg.N8N超时秒)
-	}
-	if cfg.N8N鉴权模式 != "bearer" {
-		t.Fatalf("default n8n auth mode mismatch: %s", cfg.N8N鉴权模式)
-	}
-	if cfg.N8N鉴权头 != "X-N8N-API-KEY" {
-		t.Fatalf("default n8n auth header mismatch: %s", cfg.N8N鉴权头)
-	}
-	if cfg.N8N重试次数 != 1 {
-		t.Fatalf("default n8n retry count mismatch: %d", cfg.N8N重试次数)
-	}
-	if cfg.N8N退避毫秒 != 350 {
-		t.Fatalf("default n8n retry backoff mismatch: %d", cfg.N8N退避毫秒)
-	}
 }
 
 func TestNormalizeSettingsFixInvalidScanEngineConfig(t *testing.T) {
@@ -60,28 +45,6 @@ func TestNormalizeSettingsFixInvalidScanEngineConfig(t *testing.T) {
 		t.Fatalf("normalized max slither timeout mismatch: %d", cfg2.Slither超时秒)
 	}
 
-	cfg3 := normalizeSettings(AppSettings{N8N超时秒: 1})
-	if cfg3.N8N超时秒 != 3 {
-		t.Fatalf("normalized min n8n timeout mismatch: %d", cfg3.N8N超时秒)
-	}
-	cfg4 := normalizeSettings(AppSettings{N8N超时秒: 999})
-	if cfg4.N8N超时秒 != 120 {
-		t.Fatalf("normalized max n8n timeout mismatch: %d", cfg4.N8N超时秒)
-	}
-
-	cfg5 := normalizeSettings(AppSettings{N8N鉴权模式: "invalid", N8N鉴权头: "", N8N重试次数: 99, N8N退避毫秒: 1})
-	if cfg5.N8N鉴权模式 != "bearer" {
-		t.Fatalf("normalized n8n auth mode mismatch: %s", cfg5.N8N鉴权模式)
-	}
-	if cfg5.N8N鉴权头 != "X-N8N-API-KEY" {
-		t.Fatalf("normalized n8n auth header mismatch: %s", cfg5.N8N鉴权头)
-	}
-	if cfg5.N8N重试次数 != 5 {
-		t.Fatalf("normalized n8n retry count mismatch: %d", cfg5.N8N重试次数)
-	}
-	if cfg5.N8N退避毫秒 != 50 {
-		t.Fatalf("normalized n8n backoff mismatch: %d", cfg5.N8N退避毫秒)
-	}
 }
 
 func TestSettingsJSONIncludesMetaRuleAndSystem(t *testing.T) {

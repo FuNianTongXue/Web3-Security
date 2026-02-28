@@ -6,10 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"io/fs"
 	"net/http"
-	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -27,11 +25,6 @@ const (
 	dynamicAuditProfileDeep     = "deep"
 	dynamicOrchestratorAuto     = "auto"
 	dynamicOrchestratorLocal    = "local"
-	dynamicOrchestratorN8N      = "n8n"
-	n8nAuthModeNone             = "none"
-	n8nAuthModeBearer           = "bearer"
-	n8nAuthModeAPIKey           = "x-n8n-api-key"
-	n8nAuthModeCustomHeader     = "custom-header"
 )
 
 type dynamicAuditReq struct {
@@ -380,42 +373,19 @@ func normalizeDynamicAuditProfile(v string) string {
 func normalizeDynamicOrchestrator(v string) string {
 	s := strings.ToLower(strings.TrimSpace(v))
 	switch s {
-	case dynamicOrchestratorAuto, dynamicOrchestratorLocal, dynamicOrchestratorN8N:
+	case dynamicOrchestratorAuto, dynamicOrchestratorLocal:
 		return s
 	default:
 		return dynamicOrchestratorAuto
 	}
 }
 
-func dynamicN8NConfigured(cfg AppSettings) bool {
-	if !cfg.N8N启用 {
-		return false
-	}
-	if strings.TrimSpace(cfg.N8NWebhook) != "" {
-		return true
-	}
-	return strings.TrimSpace(cfg.N8N地址) != ""
-}
-
-func resolveDynamicOrchestrator(requested string, cfg AppSettings) string {
+func resolveDynamicOrchestrator(requested string) string {
 	mode := normalizeDynamicOrchestrator(requested)
-	if mode == dynamicOrchestratorLocal || mode == dynamicOrchestratorN8N {
+	if mode == dynamicOrchestratorLocal {
 		return mode
 	}
-	if dynamicN8NConfigured(cfg) {
-		return dynamicOrchestratorN8N
-	}
 	return dynamicOrchestratorLocal
-}
-
-func normalizeN8NAuthMode(v string) string {
-	s := strings.ToLower(strings.TrimSpace(v))
-	switch s {
-	case n8nAuthModeNone, n8nAuthModeBearer, n8nAuthModeAPIKey, n8nAuthModeCustomHeader:
-		return s
-	default:
-		return n8nAuthModeBearer
-	}
 }
 
 func normalizeDynamicAuditHeader(req dynamicAuditReq) map[string]string {
@@ -621,11 +591,6 @@ func dynamicPlanReferences() []map[string]string {
 			"takeaway": "将审计、实时监控、阻断与合规联动，构建从发现到治理闭环。",
 		},
 		{
-			"title":    "n8n Docs (Official)",
-			"url":      "https://docs.n8n.io/",
-			"takeaway": "基于 Webhook Trigger + API Key 鉴权 + 重试退避策略设计稳定编排链路。",
-		},
-		{
 			"title":    "OpenAI Codex Skills",
 			"url":      "https://developers.openai.com/codex/skills/",
 			"takeaway": "技能应模块化、可复用、按需触发，适合把动态审计流程拆成标准能力单元。",
@@ -769,9 +734,6 @@ func buildDynamicAuditPlan(target, profile, orchestrator string, selectedSkills 
 		"先建模再执行，最后归并治理。",
 		"缺失工具不终止流程，但会被记录为阻塞项。",
 		"动态结果与静态审计共用治理视图，便于统一决策。",
-	}
-	if orchestrator == dynamicOrchestratorN8N {
-		planSummary = append(planSummary, "当前通过 n8n Webhook 编排执行，平台负责计划下发与门禁归并。")
 	}
 	return dynamicAuditPlan{
 		PlanID:       planID,
@@ -1198,532 +1160,6 @@ func runDynamicAuditPlan(plan dynamicAuditPlan) ([]dynamicAuditTaskResult, map[s
 	return results, summary
 }
 
-var dynamicN8NHTTPDo = func(client *http.Client, req *http.Request) (*http.Response, error) {
-	return client.Do(req)
-}
-
-var dynamicN8NSleep = time.Sleep
-
-func n8nAuthHeaderKey(cfg AppSettings) string {
-	key := strings.TrimSpace(cfg.N8N鉴权头)
-	if key == "" {
-		return "X-N8N-API-KEY"
-	}
-	return key
-}
-
-func applyN8NAuthHeaders(req *http.Request, cfg AppSettings) error {
-	if req == nil {
-		return fmt.Errorf("n8n request 不能为空")
-	}
-	mode := normalizeN8NAuthMode(cfg.N8N鉴权模式)
-	token := strings.TrimSpace(cfg.N8NToken)
-	switch mode {
-	case n8nAuthModeNone:
-		return nil
-	case n8nAuthModeBearer:
-		if token == "" {
-			return fmt.Errorf("n8n_auth_mode=bearer 但未配置 n8n_api_token")
-		}
-		req.Header.Set("Authorization", "Bearer "+token)
-		return nil
-	case n8nAuthModeAPIKey, n8nAuthModeCustomHeader:
-		if token == "" {
-			return fmt.Errorf("n8n_auth_mode=%s 但未配置 n8n_api_token", mode)
-		}
-		req.Header.Set(n8nAuthHeaderKey(cfg), token)
-		return nil
-	default:
-		return fmt.Errorf("不支持的 n8n_auth_mode: %s", mode)
-	}
-}
-
-func shouldRetryN8N(statusCode int, reqErr error) bool {
-	if reqErr != nil {
-		return true
-	}
-	if statusCode == http.StatusTooManyRequests {
-		return true
-	}
-	if statusCode >= 500 && statusCode <= 599 {
-		return true
-	}
-	return false
-}
-
-func resolveDynamicN8NWebhookURL(cfg AppSettings) (string, error) {
-	raw := strings.TrimSpace(cfg.N8NWebhook)
-	if raw == "" {
-		base := strings.TrimSpace(cfg.N8N地址)
-		if base == "" {
-			return "", fmt.Errorf("n8n webhook 未配置，请先在系统设置中填写 n8n_webhook_url")
-		}
-		raw = strings.TrimRight(base, "/") + "/webhook/scaudit-dynamic-audit"
-	}
-	u, err := url.Parse(raw)
-	if err != nil {
-		return "", fmt.Errorf("n8n webhook 地址非法: %w", err)
-	}
-	scheme := strings.ToLower(strings.TrimSpace(u.Scheme))
-	if scheme != "http" && scheme != "https" {
-		return "", fmt.Errorf("n8n webhook 仅支持 http/https")
-	}
-	if strings.TrimSpace(u.Host) == "" {
-		return "", fmt.Errorf("n8n webhook 缺少 host")
-	}
-	return u.String(), nil
-}
-
-func dynamicArrayValue(v interface{}) []interface{} {
-	rows, _ := v.([]interface{})
-	return rows
-}
-
-func decodeDynamicN8NResponse(body []byte) map[string]interface{} {
-	out := map[string]interface{}{}
-	if len(bytes.TrimSpace(body)) == 0 {
-		return out
-	}
-	var any interface{}
-	if err := json.Unmarshal(body, &any); err != nil {
-		out["raw_message"] = strings.TrimSpace(string(body))
-		return out
-	}
-	switch v := any.(type) {
-	case map[string]interface{}:
-		return v
-	case []interface{}:
-		if len(v) == 1 {
-			if one, ok := v[0].(map[string]interface{}); ok {
-				if inner, ok := one["json"].(map[string]interface{}); ok {
-					return inner
-				}
-				return one
-			}
-		}
-		out["rows"] = v
-	default:
-		out["value"] = v
-	}
-	return out
-}
-
-func decodeDynamicTaskResults(v interface{}) []dynamicAuditTaskResult {
-	if v == nil {
-		return []dynamicAuditTaskResult{}
-	}
-	if m, ok := v.(map[string]interface{}); ok {
-		if inner, ok := m["items"]; ok {
-			return decodeDynamicTaskResults(inner)
-		}
-		if inner, ok := m["results"]; ok {
-			return decodeDynamicTaskResults(inner)
-		}
-	}
-	b, err := json.Marshal(v)
-	if err != nil {
-		return []dynamicAuditTaskResult{}
-	}
-	var many []dynamicAuditTaskResult
-	if err := json.Unmarshal(b, &many); err == nil && len(many) > 0 {
-		return many
-	}
-	var one dynamicAuditTaskResult
-	if err := json.Unmarshal(b, &one); err == nil {
-		if strings.TrimSpace(one.TaskID) != "" || strings.TrimSpace(one.Name) != "" || strings.TrimSpace(one.Status) != "" {
-			return []dynamicAuditTaskResult{one}
-		}
-	}
-	return []dynamicAuditTaskResult{}
-}
-
-func normalizeDynamicTaskStatus(status string) string {
-	s := strings.ToLower(strings.TrimSpace(status))
-	switch s {
-	case "passed", "pass", "ok", "success":
-		return "passed"
-	case "blocked", "skip", "skipped":
-		return "blocked"
-	case "failed", "fail", "error":
-		return "failed"
-	default:
-		return "failed"
-	}
-}
-
-func alignDynamicTaskResults(plan dynamicAuditPlan, results []dynamicAuditTaskResult) []dynamicAuditTaskResult {
-	taskByID := map[string]dynamicAuditTask{}
-	taskByName := map[string]dynamicAuditTask{}
-	for _, one := range plan.Tasks {
-		id := strings.TrimSpace(one.ID)
-		name := strings.TrimSpace(one.Name)
-		if id != "" {
-			taskByID[id] = one
-		}
-		if name != "" {
-			taskByName[name] = one
-		}
-	}
-	now := time.Now().Format(time.RFC3339)
-	out := make([]dynamicAuditTaskResult, 0, len(results))
-	for _, one := range results {
-		if one.Metrics == nil {
-			one.Metrics = map[string]interface{}{}
-		}
-		one.Status = normalizeDynamicTaskStatus(one.Status)
-		if strings.TrimSpace(one.StartedAt) == "" {
-			one.StartedAt = now
-		}
-		if strings.TrimSpace(one.FinishedAt) == "" {
-			one.FinishedAt = one.StartedAt
-		}
-		if strings.TrimSpace(one.TaskID) != "" {
-			if task, ok := taskByID[strings.TrimSpace(one.TaskID)]; ok {
-				if strings.TrimSpace(one.Stage) == "" {
-					one.Stage = task.Stage
-				}
-				if strings.TrimSpace(one.Name) == "" {
-					one.Name = task.Name
-				}
-				if strings.TrimSpace(one.Tool) == "" {
-					one.Tool = task.Tool
-				}
-				if strings.TrimSpace(one.CommandLine) == "" {
-					one.CommandLine = task.Command
-				}
-				if strings.TrimSpace(one.CommandDir) == "" {
-					one.CommandDir = dynamicTaskWorkDir(plan.TargetPath)
-				}
-				one.Required = task.Required
-			}
-		} else if strings.TrimSpace(one.Name) != "" {
-			if task, ok := taskByName[strings.TrimSpace(one.Name)]; ok {
-				one.TaskID = task.ID
-				if strings.TrimSpace(one.Stage) == "" {
-					one.Stage = task.Stage
-				}
-				if strings.TrimSpace(one.Tool) == "" {
-					one.Tool = task.Tool
-				}
-				if strings.TrimSpace(one.CommandLine) == "" {
-					one.CommandLine = task.Command
-				}
-				if strings.TrimSpace(one.CommandDir) == "" {
-					one.CommandDir = dynamicTaskWorkDir(plan.TargetPath)
-				}
-				one.Required = task.Required
-			}
-		}
-		if strings.TrimSpace(one.Name) == "" {
-			one.Name = dynamicFirstNonEmpty(one.TaskID, "n8n workflow step")
-		}
-		if strings.TrimSpace(one.Tool) == "" {
-			one.Tool = "n8n"
-		}
-		one.Summary = dynamicFirstNonEmpty(one.Summary, firstLineText(one.StdoutTail), firstLineText(one.StderrTail), "执行完成")
-		out = append(out, one)
-	}
-	return out
-}
-
-func summarizeDynamicTaskResults(plan dynamicAuditPlan, results []dynamicAuditTaskResult) map[string]interface{} {
-	passed := 0
-	failed := 0
-	blocked := 0
-	requiredFailed := 0
-	signalTotal := 0
-	criticalTotal := 0
-	byTool := map[string]map[string]int{}
-	for _, one := range results {
-		status := normalizeDynamicTaskStatus(one.Status)
-		if status == "passed" {
-			passed++
-		} else if status == "blocked" {
-			blocked++
-			if one.Required {
-				requiredFailed++
-			}
-		} else {
-			failed++
-			if one.Required {
-				requiredFailed++
-			}
-		}
-		signalTotal += one.SignalCount
-		criticalTotal += dynamicAuditRunValueInt(one.Metrics, "critical_findings")
-		tool := strings.TrimSpace(one.Tool)
-		if tool == "" {
-			tool = "unknown"
-		}
-		if _, ok := byTool[tool]; !ok {
-			byTool[tool] = map[string]int{}
-		}
-		byTool[tool][status]++
-	}
-	overall := "success"
-	if len(results) == 0 || (passed == 0 && (failed > 0 || blocked > 0 || len(plan.Tasks) > 0)) {
-		overall = "failed"
-	} else if requiredFailed > 0 {
-		overall = "failed"
-	} else if failed > 0 || blocked > 0 {
-		overall = "partial"
-	}
-	total := len(plan.Tasks)
-	if total < len(results) {
-		total = len(results)
-	}
-	if total == 0 {
-		total = len(results)
-	}
-	return map[string]interface{}{
-		"status":            overall,
-		"tasks_total":       total,
-		"passed":            passed,
-		"failed":            failed,
-		"blocked":           blocked,
-		"required_failed":   requiredFailed,
-		"risk_signals":      signalTotal,
-		"critical_findings": criticalTotal,
-		"by_tool":           byTool,
-	}
-}
-
-func firstMap(values ...interface{}) map[string]interface{} {
-	for _, one := range values {
-		if m, ok := one.(map[string]interface{}); ok && len(m) > 0 {
-			return m
-		}
-	}
-	return map[string]interface{}{}
-}
-
-func runDynamicAuditPlanViaN8N(plan dynamicAuditPlan, cfg AppSettings) ([]dynamicAuditTaskResult, map[string]interface{}, map[string]interface{}, error) {
-	webhookURL, err := resolveDynamicN8NWebhookURL(cfg)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	timeout := cfg.N8N超时秒
-	if timeout <= 0 {
-		timeout = 20
-	}
-	if timeout < 3 {
-		timeout = 3
-	}
-	payload := map[string]interface{}{
-		"source":       "scaudit",
-		"trigger":      "dynamic-audit",
-		"triggered_at": time.Now().Format(time.RFC3339),
-		"plan":         plan,
-		"header":       plan.Header,
-		"meta": map[string]interface{}{
-			"plan_id":      plan.PlanID,
-			"profile":      plan.Profile,
-			"target_path":  plan.TargetPath,
-			"orchestrator": plan.Orchestrator,
-		},
-	}
-	body, err := json.Marshal(payload)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	client := &http.Client{Timeout: time.Duration(timeout) * time.Second}
-	retryCount := cfg.N8N重试次数
-	if retryCount < 0 {
-		retryCount = 0
-	}
-	if retryCount > 5 {
-		retryCount = 5
-	}
-	backoffMS := cfg.N8N退避毫秒
-	if backoffMS <= 0 {
-		backoffMS = 350
-	}
-	if backoffMS < 50 {
-		backoffMS = 50
-	}
-	if backoffMS > 5000 {
-		backoffMS = 5000
-	}
-	maxAttempts := retryCount + 1
-	attempted := 0
-	respBody := []byte{}
-	lastStatus := 0
-	lastErr := error(nil)
-	started := time.Now()
-	for attempt := 1; attempt <= maxAttempts; attempt++ {
-		attempted = attempt
-		req, err := http.NewRequest(http.MethodPost, webhookURL, bytes.NewReader(body))
-		if err != nil {
-			return nil, nil, nil, err
-		}
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("X-Scaudit-Source", "dynamic-audit")
-		if aerr := applyN8NAuthHeaders(req, cfg); aerr != nil {
-			return nil, nil, nil, aerr
-		}
-		resp, derr := dynamicN8NHTTPDo(client, req)
-		if derr != nil {
-			lastErr = derr
-			if attempt < maxAttempts {
-				dynamicN8NSleep(time.Duration(backoffMS*attempt) * time.Millisecond)
-				continue
-			}
-			break
-		}
-		lastStatus = resp.StatusCode
-		raw, rerr := io.ReadAll(io.LimitReader(resp.Body, 2<<20))
-		_ = resp.Body.Close()
-		if rerr != nil {
-			lastErr = fmt.Errorf("读取 n8n 响应失败: %w", rerr)
-			if attempt < maxAttempts {
-				dynamicN8NSleep(time.Duration(backoffMS*attempt) * time.Millisecond)
-				continue
-			}
-			break
-		}
-		respBody = raw
-		lastErr = nil
-		if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-			break
-		}
-		if !shouldRetryN8N(resp.StatusCode, nil) || attempt >= maxAttempts {
-			msg := firstLineText(strings.TrimSpace(string(raw)))
-			if msg == "" {
-				msg = resp.Status
-			}
-			lastErr = fmt.Errorf("n8n webhook 返回非2xx: %d %s", resp.StatusCode, msg)
-			break
-		}
-		dynamicN8NSleep(time.Duration(backoffMS*attempt) * time.Millisecond)
-	}
-	duration := time.Since(started).Milliseconds()
-	meta := map[string]interface{}{
-		"url":         webhookURL,
-		"duration_ms": duration,
-		"attempts":    attempted,
-		"auth_mode":   normalizeN8NAuthMode(cfg.N8N鉴权模式),
-		"auth_header": n8nAuthHeaderKey(cfg),
-	}
-	if lastStatus > 0 {
-		meta["http_status"] = lastStatus
-	}
-	meta["response_size"] = len(respBody)
-	if lastErr != nil {
-		if lastStatus > 0 {
-			return nil, nil, meta, lastErr
-		}
-		return nil, nil, meta, fmt.Errorf("调用 n8n webhook 失败: %w", lastErr)
-	}
-	parsed := decodeDynamicN8NResponse(respBody)
-	payloadMap := parsed
-	if d, ok := parsed["data"].(map[string]interface{}); ok && len(d) > 0 {
-		payloadMap = d
-	}
-	summary := firstMap(payloadMap["summary"], parsed["summary"])
-	results := decodeDynamicTaskResults(payloadMap["results"])
-	if len(results) == 0 {
-		results = decodeDynamicTaskResults(payloadMap["tasks"])
-	}
-	if len(results) == 0 {
-		results = decodeDynamicTaskResults(payloadMap["result"])
-	}
-	if len(results) == 0 {
-		results = decodeDynamicTaskResults(parsed["results"])
-	}
-	if len(results) == 0 {
-		results = []dynamicAuditTaskResult{
-			{
-				TaskID:      "n8n-webhook",
-				Stage:       "orchestration",
-				Name:        "n8n 动态审计编排",
-				Tool:        "n8n",
-				Required:    true,
-				Status:      "passed",
-				Available:   true,
-				ExitCode:    0,
-				DurationMS:  duration,
-				StartedAt:   started.Format(time.RFC3339),
-				FinishedAt:  time.Now().Format(time.RFC3339),
-				CommandLine: "POST " + webhookURL,
-				CommandDir:  dynamicTaskWorkDir(plan.TargetPath),
-				Summary:     dynamicFirstNonEmpty(firstLineText(strings.TrimSpace(string(respBody))), "n8n 编排执行完成"),
-				Metrics:     map[string]interface{}{},
-			},
-		}
-	}
-	results = alignDynamicTaskResults(plan, results)
-	if len(summary) == 0 {
-		summary = summarizeDynamicTaskResults(plan, results)
-	} else {
-		if _, ok := summary["tasks_total"]; !ok {
-			summary["tasks_total"] = len(results)
-		}
-		if _, ok := summary["passed"]; !ok {
-			summary["passed"] = 0
-		}
-		if _, ok := summary["failed"]; !ok {
-			summary["failed"] = 0
-		}
-		if _, ok := summary["blocked"]; !ok {
-			summary["blocked"] = 0
-		}
-		if _, ok := summary["required_failed"]; !ok {
-			summary["required_failed"] = 0
-		}
-		if _, ok := summary["risk_signals"]; !ok {
-			sum := 0
-			for _, one := range results {
-				sum += one.SignalCount
-			}
-			summary["risk_signals"] = sum
-		}
-		if _, ok := summary["critical_findings"]; !ok {
-			sum := 0
-			for _, one := range results {
-				sum += dynamicAuditRunValueInt(one.Metrics, "critical_findings")
-			}
-			summary["critical_findings"] = sum
-		}
-		if _, ok := summary["by_tool"]; !ok {
-			summary["by_tool"] = summarizeDynamicTaskResults(plan, results)["by_tool"]
-		}
-	}
-	statusText := strings.ToLower(strings.TrimSpace(fmt.Sprintf("%v", summary["status"])))
-	switch statusText {
-	case "success", "passed", "pass", "ok":
-		summary["status"] = "success"
-	case "partial":
-		summary["status"] = "partial"
-	case "failed", "fail", "error", "blocked":
-		summary["status"] = "failed"
-	default:
-		summary["status"] = summarizeDynamicTaskResults(plan, results)["status"]
-	}
-	meta["response"] = map[string]interface{}{
-		"keys":         keysOfMap(parsed),
-		"rows_present": len(dynamicArrayValue(parsed["rows"])),
-	}
-	if id := strings.TrimSpace(fmt.Sprintf("%v", payloadMap["workflow_id"])); id != "" && id != "<nil>" {
-		meta["workflow_id"] = id
-	}
-	if id := strings.TrimSpace(fmt.Sprintf("%v", payloadMap["execution_id"])); id != "" && id != "<nil>" {
-		meta["execution_id"] = id
-	}
-	return results, summary, meta, nil
-}
-
-func keysOfMap(m map[string]interface{}) []string {
-	if len(m) == 0 {
-		return []string{}
-	}
-	out := make([]string, 0, len(m))
-	for k := range m {
-		out = append(out, k)
-	}
-	sort.Strings(out)
-	return out
-}
-
 type dynamicAuditGatePolicy struct {
 	MaxFailed           int `json:"max_failed"`
 	MaxBlocked          int `json:"max_blocked"`
@@ -1939,19 +1375,7 @@ func (a *app) dynamicAuditPlanAPI(w http.ResponseWriter, r *http.Request) {
 		a.write(w, http.StatusInternalServerError, apiResp{OK: false, Message: err.Error()})
 		return
 	}
-	cfg := defaultSettings()
-	if a.settingStore != nil {
-		cfg, err = a.settingStore.Load()
-		if err != nil {
-			a.write(w, http.StatusInternalServerError, apiResp{OK: false, Message: err.Error()})
-			return
-		}
-	}
-	orchestrator := resolveDynamicOrchestrator(req.Orchestrator, cfg)
-	if orchestrator == dynamicOrchestratorN8N && !dynamicN8NConfigured(cfg) {
-		a.write(w, http.StatusBadRequest, apiResp{OK: false, Message: "n8n 未配置，请先在系统设置中启用并填写 webhook/base_url"})
-		return
-	}
+	orchestrator := resolveDynamicOrchestrator(req.Orchestrator)
 	selected := selectDynamicSkills(skills, req.SkillNames)
 	plan := buildDynamicAuditPlan(targetPath, req.Profile, orchestrator, selected)
 	plan.Header = normalizeDynamicAuditHeader(req)
@@ -1983,65 +1407,17 @@ func (a *app) dynamicAuditRunAPI(w http.ResponseWriter, r *http.Request) {
 		a.write(w, http.StatusInternalServerError, apiResp{OK: false, Message: err.Error()})
 		return
 	}
-	cfg := defaultSettings()
-	if a.settingStore != nil {
-		cfg, err = a.settingStore.Load()
-		if err != nil {
-			a.write(w, http.StatusInternalServerError, apiResp{OK: false, Message: err.Error()})
-			return
-		}
-	}
-	requestedOrchestrator := normalizeDynamicOrchestrator(req.Orchestrator)
-	orchestrator := resolveDynamicOrchestrator(req.Orchestrator, cfg)
-	if orchestrator == dynamicOrchestratorN8N && !dynamicN8NConfigured(cfg) {
-		a.write(w, http.StatusBadRequest, apiResp{OK: false, Message: "n8n 未配置，请先在系统设置中启用并填写 webhook/base_url"})
-		return
-	}
+	orchestrator := resolveDynamicOrchestrator(req.Orchestrator)
 	selected := selectDynamicSkills(skills, req.SkillNames)
 	plan := buildDynamicAuditPlan(targetPath, req.Profile, orchestrator, selected)
 	plan.Header = normalizeDynamicAuditHeader(req)
 	applyDynamicTaskSelection(&plan, req.TaskIDs)
 	applyDynamicTaskOrder(&plan, req.TaskOrder)
-	var results []dynamicAuditTaskResult
-	var summary map[string]interface{}
-	orchestratorMeta := map[string]interface{}{}
-	if orchestrator == dynamicOrchestratorN8N {
-		var runErr error
-		results, summary, orchestratorMeta, runErr = runDynamicAuditPlanViaN8N(plan, cfg)
-		if runErr != nil {
-			if requestedOrchestrator == dynamicOrchestratorAuto {
-				plan.Orchestrator = dynamicOrchestratorLocal
-				results, summary = runDynamicAuditPlan(plan)
-				summary["orchestrator_fallback"] = map[string]interface{}{
-					"from":   dynamicOrchestratorN8N,
-					"to":     dynamicOrchestratorLocal,
-					"reason": runErr.Error(),
-				}
-				a.appendLog(r, 日志类型系统, "n8n 编排失败，自动回退本地动态审计", 日志详情("target=%s err=%s", targetPath, 简化错误(runErr)), false)
-			} else {
-				a.appendLog(r, 日志类型系统, "动态代码审计执行失败", 日志详情("mode=n8n target=%s err=%s", targetPath, 简化错误(runErr)), false)
-				a.write(w, http.StatusBadGateway, apiResp{OK: false, Message: runErr.Error()})
-				return
-			}
-		}
-	}
-	if orchestrator != dynamicOrchestratorN8N || summary == nil {
-		results, summary = runDynamicAuditPlan(plan)
-	}
-	if orchestrator == dynamicOrchestratorN8N && summary != nil && summary["orchestrator_fallback"] == nil && len(orchestratorMeta) > 0 {
-		summary["orchestrator_meta"] = orchestratorMeta
-	}
+	results, summary := runDynamicAuditPlan(plan)
 	if summary == nil {
 		summary = map[string]interface{}{}
 	}
-	if orchestrator == dynamicOrchestratorN8N && summary["orchestrator_fallback"] != nil {
-		summary["orchestrator"] = dynamicOrchestratorLocal
-	} else {
-		summary["orchestrator"] = plan.Orchestrator
-	}
-	if len(orchestratorMeta) > 0 && summary["orchestrator_fallback"] == nil {
-		summary["orchestrator_meta"] = orchestratorMeta
-	}
+	summary["orchestrator"] = plan.Orchestrator
 	gateResult := buildDynamicAuditGateResult(summary, results, defaultDynamicAuditGatePolicy())
 	summary["gate"] = gateResult
 	status := strings.TrimSpace(fmt.Sprintf("%v", summary["status"]))

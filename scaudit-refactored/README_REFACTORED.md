@@ -5,7 +5,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/yourorg/scaudit)](https://goreportcard.com/report/github.com/yourorg/scaudit)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-企业级研发安全审计与管理平台，支持静态/动态代码审计、n8n工作流编排、门禁策略、治理告警等功能。
+企业级研发安全审计与管理平台，支持静态/动态代码审计、本地编排执行、门禁策略、治理告警等功能。
 
 > 注意：本 README_REFACTORED.md 中关于 PostgreSQL/Redis/监控栈/CI-CD 等内容包含规划与占位描述；当前仓库可运行形态以本地文件存储 + 内置 Web UI 为主。
 > 实际启动方式请以 `QUICKSTART.md` 为准。
@@ -275,7 +275,7 @@ kubectl apply -f deployments/kubernetes/hpa.yaml
 ### v1.0.0 (初始版本)
 - 基础静态/动态审计功能
 - GitLab集成
-- n8n工作流编排
+- 本地动态审计编排
 
 ---
 

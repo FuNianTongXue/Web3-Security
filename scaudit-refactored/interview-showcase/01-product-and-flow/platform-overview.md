@@ -8,10 +8,10 @@
 
 ## 关键流程
 
-1. 系统设置：配置 GitLab/Jira/n8n/扫描引擎参数
+1. 系统设置：配置 GitLab/Jira/扫描引擎参数
 2. 项目接入：项目上传（本地目录/文件/压缩包/GitLab）
 3. 规则执行：按规则集执行静态扫描
-4. 动态审计：按 `quick/standard/deep` 与 `local/n8n/auto` 编排执行
+4. 动态审计：按 `quick/standard/deep` 与 `local/auto` 编排执行
 5. 报告输出：生成 JSON + Markdown 报告
 6. 治理闭环：误报抑制、漏洞工单、发布门禁评估、审批与生产确认
 

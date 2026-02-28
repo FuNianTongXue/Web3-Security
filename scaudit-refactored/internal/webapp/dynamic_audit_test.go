@@ -3,8 +3,6 @@ package webapp
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -12,7 +10,6 @@ import (
 	"runtime"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestParseSkillFrontmatter(t *testing.T) {
@@ -110,141 +107,15 @@ func TestDecodeDynamicAuditReqTaskIDs(t *testing.T) {
 }
 
 func TestResolveDynamicOrchestrator(t *testing.T) {
-	cfg := defaultSettings()
-	if got := resolveDynamicOrchestrator("auto", cfg); got != dynamicOrchestratorLocal {
+	if got := resolveDynamicOrchestrator("auto"); got != dynamicOrchestratorLocal {
 		t.Fatalf("auto orchestrator mismatch: %s", got)
 	}
-	cfg.N8N启用 = true
-	cfg.N8NWebhook = "https://n8n.example.com/webhook/scaudit"
-	if got := resolveDynamicOrchestrator("auto", cfg); got != dynamicOrchestratorN8N {
-		t.Fatalf("auto with n8n config mismatch: %s", got)
-	}
-	if got := resolveDynamicOrchestrator("local", cfg); got != dynamicOrchestratorLocal {
+	if got := resolveDynamicOrchestrator("local"); got != dynamicOrchestratorLocal {
 		t.Fatalf("explicit local mismatch: %s", got)
 	}
-	if got := resolveDynamicOrchestrator("n8n", cfg); got != dynamicOrchestratorN8N {
-		t.Fatalf("explicit n8n mismatch: %s", got)
-	}
 }
 
-func TestRunDynamicAuditPlanViaN8N(t *testing.T) {
-	old := dynamicN8NHTTPDo
-	defer func() { dynamicN8NHTTPDo = old }()
-	dynamicN8NHTTPDo = func(client *http.Client, req *http.Request) (*http.Response, error) {
-		if got := req.URL.String(); got != "https://n8n.example.com/webhook/scaudit" {
-			t.Fatalf("unexpected webhook url: %s", got)
-		}
-		if got := req.Header.Get("Authorization"); got != "Bearer demo-token" {
-			t.Fatalf("authorization header mismatch: %s", got)
-		}
-		raw, err := io.ReadAll(req.Body)
-		if err != nil {
-			t.Fatalf("read request body failed: %v", err)
-		}
-		if !strings.Contains(string(raw), `"trigger":"dynamic-audit"`) {
-			t.Fatalf("request body missing trigger: %s", string(raw))
-		}
-		respBody := `{"summary":{"status":"partial","tasks_total":2,"passed":1,"failed":1,"blocked":0,"required_failed":1,"risk_signals":3,"critical_findings":1},"results":[{"task_id":"slither-baseline","status":"failed","summary":"发现高风险","signal_count":3,"metrics":{"critical_findings":1}},{"task_id":"forge-test","status":"passed","summary":"测试通过","signal_count":0,"metrics":{"critical_findings":0}}],"workflow_id":"wf_001","execution_id":"exec_001"}`
-		return &http.Response{
-			StatusCode: http.StatusOK,
-			Header:     make(http.Header),
-			Body:       io.NopCloser(strings.NewReader(respBody)),
-		}, nil
-	}
-
-	cfg := defaultSettings()
-	cfg.N8N启用 = true
-	cfg.N8NWebhook = "https://n8n.example.com/webhook/scaudit"
-	cfg.N8NToken = "demo-token"
-	cfg.N8N超时秒 = 15
-	plan := buildDynamicAuditPlan("/tmp/project", "standard", "n8n", []string{"web3-security-pm"})
-	plan.Header = map[string]string{"项目id": "prj_001"}
-
-	results, summary, meta, err := runDynamicAuditPlanViaN8N(plan, cfg)
-	if err != nil {
-		t.Fatalf("run via n8n failed: %v", err)
-	}
-	if len(results) != 2 {
-		t.Fatalf("result size mismatch: %d", len(results))
-	}
-	if got := strings.TrimSpace(results[0].Tool); got == "" {
-		t.Fatalf("tool should be auto-filled for n8n result")
-	}
-	if got := strings.TrimSpace(results[0].Status); got != "failed" {
-		t.Fatalf("normalized status mismatch: %s", got)
-	}
-	if got := strings.TrimSpace(summary["status"].(string)); got != "partial" {
-		t.Fatalf("summary status mismatch: %s", got)
-	}
-	if dynamicAuditRunValueInt(summary, "failed") != 1 {
-		t.Fatalf("summary failed mismatch: %#v", summary)
-	}
-	if dynamicAuditRunValueInt(summary, "required_failed") != 1 {
-		t.Fatalf("summary required_failed mismatch: %#v", summary)
-	}
-	if got := strings.TrimSpace(meta["workflow_id"].(string)); got != "wf_001" {
-		t.Fatalf("meta workflow_id mismatch: %s", got)
-	}
-}
-
-func TestRunDynamicAuditPlanViaN8NRetryAndAPIKeyAuth(t *testing.T) {
-	oldDo := dynamicN8NHTTPDo
-	oldSleep := dynamicN8NSleep
-	defer func() {
-		dynamicN8NHTTPDo = oldDo
-		dynamicN8NSleep = oldSleep
-	}()
-	dynamicN8NSleep = func(time.Duration) {}
-	callCount := 0
-	dynamicN8NHTTPDo = func(client *http.Client, req *http.Request) (*http.Response, error) {
-		callCount++
-		if got := req.Header.Get("X-N8N-API-KEY"); got != "demo-api-key" {
-			t.Fatalf("api key header mismatch: %s", got)
-		}
-		if callCount == 1 {
-			return &http.Response{
-				StatusCode: http.StatusInternalServerError,
-				Header:     make(http.Header),
-				Body:       io.NopCloser(strings.NewReader(`{"message":"temporary failure"}`)),
-				Status:     "500 Internal Server Error",
-			}, nil
-		}
-		return &http.Response{
-			StatusCode: http.StatusOK,
-			Header:     make(http.Header),
-			Body:       io.NopCloser(strings.NewReader(`{"summary":{"status":"success"},"results":[{"task_id":"slither-baseline","status":"passed"}]}`)),
-		}, nil
-	}
-
-	cfg := defaultSettings()
-	cfg.N8N启用 = true
-	cfg.N8NWebhook = "https://n8n.example.com/webhook/scaudit"
-	cfg.N8NToken = "demo-api-key"
-	cfg.N8N鉴权模式 = "x-n8n-api-key"
-	cfg.N8N鉴权头 = "X-N8N-API-KEY"
-	cfg.N8N重试次数 = 2
-	cfg.N8N退避毫秒 = 100
-
-	plan := buildDynamicAuditPlan("/tmp/project", "quick", "n8n", []string{"web3-security-pm"})
-	results, summary, meta, err := runDynamicAuditPlanViaN8N(plan, cfg)
-	if err != nil {
-		t.Fatalf("run via n8n failed: %v", err)
-	}
-	if callCount != 2 {
-		t.Fatalf("expected 2 calls after retry, got %d", callCount)
-	}
-	if len(results) != 1 {
-		t.Fatalf("result size mismatch: %d", len(results))
-	}
-	if got := strings.TrimSpace(summary["status"].(string)); got != "success" {
-		t.Fatalf("summary status mismatch: %s", got)
-	}
-	if dynamicAuditRunValueInt(meta, "attempts") != 2 {
-		t.Fatalf("meta attempts mismatch: %#v", meta)
-	}
-}
-
-func TestDynamicAuditRunAPIAutoFallbackToLocal(t *testing.T) {
+func TestDynamicAuditRunAPIAutoResolvesToLocal(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("shell script fake slither is unix-only")
 	}
@@ -272,16 +143,8 @@ func TestDynamicAuditRunAPIAutoFallbackToLocal(t *testing.T) {
 	settingPath := filepath.Join(root, "settings.json")
 	store := NewSettingsStore(settingPath)
 	cfg := defaultSettings()
-	cfg.N8N启用 = true
-	cfg.N8NWebhook = "https://n8n.example.com/webhook/scaudit"
 	if err := store.Save(cfg); err != nil {
 		t.Fatalf("save settings failed: %v", err)
-	}
-
-	old := dynamicN8NHTTPDo
-	defer func() { dynamicN8NHTTPDo = old }()
-	dynamicN8NHTTPDo = func(client *http.Client, req *http.Request) (*http.Response, error) {
-		return nil, errors.New("mock n8n unavailable")
 	}
 
 	a := &app{
@@ -297,7 +160,7 @@ func TestDynamicAuditRunAPIAutoFallbackToLocal(t *testing.T) {
 	rec := httptest.NewRecorder()
 	a.dynamicAuditRunAPI(rec, req)
 	if rec.Code != http.StatusOK {
-		t.Fatalf("run api should fallback to local and still return 200, got %d body=%s", rec.Code, rec.Body.String())
+		t.Fatalf("run api should return 200 in auto(local) mode, got %d body=%s", rec.Code, rec.Body.String())
 	}
 	var resp testAPIResp
 	if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
@@ -319,11 +182,7 @@ func TestDynamicAuditRunAPIAutoFallbackToLocal(t *testing.T) {
 		t.Fatalf("summary missing: %#v", runObj)
 	}
 	if got := strings.TrimSpace(summary["orchestrator"].(string)); got != "local" {
-		t.Fatalf("fallback orchestrator mismatch: %s", got)
-	}
-	fallback, _ := summary["orchestrator_fallback"].(map[string]interface{})
-	if fallback == nil {
-		t.Fatalf("orchestrator_fallback should exist: %#v", summary)
+		t.Fatalf("auto orchestrator should resolve to local mismatch: %s", got)
 	}
 }
 
